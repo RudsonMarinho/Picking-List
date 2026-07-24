@@ -136,24 +136,41 @@ router.post("/:id/items/:itemId/pick", async (req, res) => {
         );
       }
 
-      const stock = await tx.stock.findUnique({
-        where: { productId_locationId: { productId: item.productId, locationId: item.locationId } },
+      // Updates condicionais (updateMany + where) em vez de ler-depois-escrever: a
+      // condição é avaliada atomicamente pelo banco no momento da escrita, evitando
+      // que duas requisições concorrentes ultrapassem juntas o limite disponível.
+      const stockUpdate = await tx.stock.updateMany({
+        where: {
+          productId: item.productId,
+          locationId: item.locationId,
+          quantity: { gte: quantityPicked },
+        },
+        data: { quantity: { decrement: quantityPicked } },
       });
-      if (!stock || stock.quantity < quantityPicked) {
+      if (stockUpdate.count === 0) {
         throw Object.assign(new Error("Estoque insuficiente na localização"), { status: 409 });
       }
 
-      await tx.stock.update({
-        where: { id: stock.id },
-        data: { quantity: { decrement: quantityPicked } },
+      const itemUpdate = await tx.pickingItem.updateMany({
+        where: {
+          id: itemId,
+          pickingListId: id,
+          quantityPicked: { lte: item.quantityRequested - quantityPicked },
+        },
+        data: { quantityPicked: { increment: quantityPicked } },
       });
+      if (itemUpdate.count === 0) {
+        throw Object.assign(
+          new Error(`Quantidade excede o restante a separar (${remainingToPick})`),
+          { status: 409 }
+        );
+      }
 
-      const newQuantityPicked = item.quantityPicked + quantityPicked;
+      const refreshedItem = await tx.pickingItem.findUnique({ where: { id: itemId } });
       const updatedItem = await tx.pickingItem.update({
         where: { id: itemId },
         data: {
-          quantityPicked: newQuantityPicked,
-          status: newQuantityPicked >= item.quantityRequested ? "PICKED" : "PENDING",
+          status: refreshedItem.quantityPicked >= refreshedItem.quantityRequested ? "PICKED" : "PENDING",
         },
         include: { product: true, location: true },
       });
