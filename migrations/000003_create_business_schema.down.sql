@@ -1,0 +1,18 @@
+DROP TABLE IF EXISTS import_batches;
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS allocation;
+DROP TABLE IF EXISTS asset;
+DROP TABLE IF EXISTS asset_type;
+DROP TABLE IF EXISTS collaborator;
+DROP TABLE IF EXISTS sector;
+DROP TABLE IF EXISTS branch;
+DROP TABLE IF EXISTS company;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS user_scopes;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS role_permissions;
+DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS session_lookup;
+DROP TABLE IF EXISTS auth_lookup;
+
+DROP FUNCTION IF EXISTS set_updated_at();

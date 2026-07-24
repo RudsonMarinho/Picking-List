@@ -1,0 +1,24 @@
+services:
+  invtech-api:
+    build:
+      context: .
+    image: invtech-api:1.0.0
+    restart: unless-stopped
+    expose:
+      - "8080"                 # R3 — Traefik alcança pela rede Docker
+    mem_limit: 512m
+    pids_limit: 100
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "/app/invtech-api", "-healthcheck"]   # R4 — path absoluto
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - coolify                # invtech-db vive na rede coolify — sem isso, DB_HOST não resolve
+
+networks:
+  coolify:
+    external: true

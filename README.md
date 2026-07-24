@@ -1,90 +1,45 @@
-# Picking List
+# InvTech — Gestão de Ativos e Recursos de TI (SaaS · Fase 1)
 
-Sistema de gestão de estoque e separação de pedidos (picking list) para armazém/depósito.
+Sistema multi-tenant de gestão de ativos de TI. Etapa 0 do DFE.
 
-## Stack
+- **Stack:** Go 1.23 + Fiber v2 + pgx v5 + golang-migrate
+- **Banco:** PostgreSQL isolado `invtech_db` (RLS FORCE, multi-tenant)
+- **Servidor:** srv110 (10.0.0.110) · Coolify grupo `servicos-saas`
+- **Frontend Fase 1:** `//go:embed` do HTML em `web/index.html` (sem Vercel)
+- **Error ID prefix:** `INV` · **Senhas:** Argon2id · **Sessão:** server-side revogável
 
-- **Backend**: Node.js + Express + Prisma + PostgreSQL, autenticação via JWT
-- **Frontend**: React + Vite + React Router
+> **Desvio de stack (SQLC-01):** a decisão original previa sqlc para geração
+> de queries. Formalizado pelo Mentor (amendment 6) como emenda válida só
+> para a Fase 1 do invtech: queries pgx parametrizadas escritas à mão em
+> `internal/repository/*.go`. Detalhe e condições cumpridas em
+> ARQUITETURA.md § Emenda SQLC-01.
 
-## Funcionalidades
+## Estado
 
-- Autenticação de usuários (admin/operador)
-- Cadastro de produtos e localizações de armazém
-- Controle de estoque por produto/localização
-- Criação de pedidos com múltiplos itens
-- Geração automática de picking list a partir de um pedido, alocando estoque disponível entre localizações
-- Confirmação de separação por item, com baixa automática de estoque
-- Fechamento automático do pedido quando toda a picking list é separada
+**W4 implementado, validado e migrado no banco real** (migrations, FAIL-FAST,
+RLS, Argon2id, sessions, CSRF, os 9 módulos + import idempotente, seed).
+Suíte negativa completa (11/11 itens de ARQUITETURA.md) verde, com cobertura
+de integração de todo caminho de query contra Postgres real (fluxo
+ponta-a-ponta + update/list/delete de cada módulo).
 
-## Estrutura
+`invtech-db` já existe no Coolify (`servicos-saas`), migrations aplicadas,
+role `invtech_app` com senha real e validado em produção (G1/G2 da
+MentorDecision amendment 6 — evidência em PROGRESSO.md). Ainda não existe a
+aplicação `invtech-api` deployada — só o banco. G3 (registro no OpsMonitor)
+segue bloqueado nesta sessão por falta de MCP autorizado.
 
-```
-backend/    API REST (Express + Prisma)
-frontend/   Aplicação web (React + Vite)
-```
+## Documentação
 
-## Como rodar localmente
+- `ARQUITETURA.md` — decisões, schema, contrato de API, suíte negativa (fonte da verdade)
+- `SELF-HEALER-INTEGRACAO.md` — contrato de monitoramento (OpsMonitor/Sentinela)
+- `ORQUESTRADOR.md` — regras de orquestração + playbook de erro crítico
+- `.claude/CLAUDE.md` — contexto do projeto para o Claude Code
 
-### Opção 1 — Docker (recomendado)
+## Ordem de implementação (W4)
 
-Só precisa ter o [Docker](https://docs.docker.com/get-docker/) instalado — não é necessário instalar Node.js nem PostgreSQL na sua máquina.
-
-```bash
-docker compose up --build
-```
-
-Isso sobe três serviços:
-
-- **postgres** — banco de dados (porta `5432`)
-- **backend** — API Express, criando/atualizando as tabelas e o usuário de exemplo automaticamente a cada start (porta `3333`)
-- **frontend** — aplicação React com hot-reload (porta `5173`)
-
-Depois de subir, acesse **http://localhost:5173** e faça login com:
-
-- E-mail: `admin@pickinglist.com`
-- Senha: `admin123`
-
-Alterações nos arquivos de `backend/` e `frontend/` são refletidas automaticamente (volumes montados + nodemon/Vite). Para parar tudo: `Ctrl+C` ou `docker compose down` (use `docker compose down -v` se quiser apagar também os dados do banco).
-
-### Opção 2 — Node.js local
-
-Use esta opção se preferir rodar backend e frontend diretamente na sua máquina (requer Node.js 20+ instalado). O banco ainda roda em Docker.
-
-#### 1. Banco de dados
-
-```bash
-docker compose up -d postgres
-```
-
-#### 2. Backend
-
-```bash
-cd backend
-cp .env.example .env
-npm install
-npm run prisma:migrate
-npm run prisma:seed
-npm run dev
-```
-
-A API sobe em `http://localhost:3333`. Usuário de exemplo criado pelo seed: `admin@pickinglist.com` / `admin123`.
-
-#### 3. Frontend
-
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
-```
-
-A aplicação sobe em `http://localhost:5173` e usa proxy para `/api` -> backend.
-
-## Fluxo de uso
-
-1. Cadastre produtos em **Produtos**.
-2. Cadastre localizações e ajuste o estoque em **Estoque**.
-3. Crie um pedido em **Pedidos** com os itens desejados.
-4. Gere a picking list do pedido (aloca estoque disponível entre localizações).
-5. Em **Picking Lists**, abra a lista gerada e confirme a separação de cada item — o estoque é baixado automaticamente e o pedido é concluído quando tudo for separado.
+1. FAIL-FAST de boot (antes de qualquer migration)
+2. Migrations 000000..000003
+3. Suíte negativa VERDE
+4. `//go:embed` da UI + Argon2id + sessions + lookups + CSRF
+5. Handlers dos 9 módulos + import idempotente
+6. Seed

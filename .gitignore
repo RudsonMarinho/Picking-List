@@ -1,9 +1,96 @@
-node_modules/
-dist/
-build/
+# ========================
+# Ambiente e credenciais
+# ========================
 .env
 .env.local
-*.log
-.DS_Store
+.env.*.local
+*.key
+*.pem
+secrets/
 
-backend/generated/
+# ========================
+# Python
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ========================
+# Node.js
+# ========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+.pnpm-store/
+.next/
+.nuxt/
+dist/
+build/
+
+# ========================
+# Dados e bancos
+# ========================
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.sql.bak
+lancedb_data/
+
+# ========================
+# Logs
+# ========================
+logs/
+*.log
+log/
+
+# ========================
+# IDE e editores
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# Docker
+# ========================
+.dockerignore
+
+# ========================
+# Backups e temporários
+# ========================
+*.bak
+*.tmp
+*.temp
+tmp/
+temp/
+
+# ========================
+# Go
+# ========================
+/invtech-api
+/.devbin/
+/bin/

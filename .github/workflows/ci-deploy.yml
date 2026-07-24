@@ -1,0 +1,84 @@
+name: CI e Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: invtech_owner
+          POSTGRES_PASSWORD: ci-owner-pass
+          POSTGRES_DB: invtech_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U invtech_owner -d invtech_ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Build
+        run: go build ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Testes unitários
+        run: go test ./...
+
+      - name: Instala golang-migrate e psql
+        run: |
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.1
+          sudo apt-get update -qq && sudo apt-get install -qq -y postgresql-client
+
+      - name: Aplica migrations 000000..000003 (Postgres do job, via invtech_owner)
+        run: |
+          ~/go/bin/migrate -path=migrations \
+            -database "postgres://invtech_owner:ci-owner-pass@localhost:5432/invtech_ci?sslmode=disable" up
+
+      - name: bootstrap_db.sh — cria/senha do invtech_app de teste
+        env:
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          DB_NAME: invtech_ci
+          DB_MIGRATE_USER: invtech_owner
+          DB_MIGRATE_PASSWORD: ci-owner-pass
+          DB_USER: invtech_app
+          DB_PASSWORD: ci-app-pass
+        run: bash scripts/bootstrap_db.sh
+
+      - name: Suíte negativa + testes de integração (Postgres real do job)
+        env:
+          TEST_DB_HOST: localhost
+          TEST_DB_PORT: "5432"
+          TEST_DB_NAME: invtech_ci
+          TEST_DB_OWNER_USER: invtech_owner
+          TEST_DB_OWNER_PASSWORD: ci-owner-pass
+          TEST_DB_APP_USER: invtech_app
+          TEST_DB_APP_PASSWORD: ci-app-pass
+        run: go test -tags=integration ./...
+
+  deploy:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar deploy no Coolify (invtech-api)
+        run: |
+          curl -fsS \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_API_TOKEN }}" \
+            "https://coolify-fc.fortcargo.com.br/api/v1/deploy?uuid=j6yc0qzhslky713ra5qte0u4"

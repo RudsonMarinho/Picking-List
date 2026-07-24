@@ -1,0 +1,2 @@
+DROP INDEX IF EXISTS ux_asset_tag;
+ALTER TABLE asset DROP COLUMN IF EXISTS asset_tag;

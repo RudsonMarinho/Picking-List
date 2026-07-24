@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# pre-commit — barra commit se detectar segredo em texto puro no staged.
+# Ativar no projeto: git config core.hooksPath .githooks
+# Regra global: nenhum segredo hardcoded — usar ~/infra-credenciais.env (cofre) via source.
+set -euo pipefail
+
+# Padrões de segredo comuns no ecossistema DFE/Fortcargo.
+# Pega: chaves Anthropic/AWS, PEM, atribuição a vars *KEY/*TOKEN/*PASS/*SECRET/*SENHA,
+# palavra-chave password/senha/secret, hex de alta entropia atribuído (=), e Bearer.
+PATTERNS='(sk-ant-api03-[A-Za-z0-9_-]{8}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]+PRIVATE KEY-----|[A-Za-z0-9_]*(KEY|TOKEN|PASS|PWD|SECRET|SENHA|APIKEY)["'\'' ]*[:=]["'\'' ]*[A-Za-z0-9@#._/+=-]{8,}|(password|passwd|senha|secret|api[_-]?key|token)["'\'' ]*[:=]["'\'' ]*[A-Za-z0-9@#._/+-]{8,}|=["'\'' ]*[0-9a-fA-F]{32,}|Bearer [A-Za-z0-9]{16,})'
+
+# Só arquivos staged de texto; ignora placeholders do cofre e .env.example.
+files=$(git diff --cached --name-only --diff-filter=ACM)
+hits=""
+for f in $files; do
+  [ -f "$f" ] || continue
+  case "$f" in *.env.example|*.md.example) continue;; esac
+  m=$(grep -InE "$PATTERNS" "$f" 2>/dev/null \
+        | grep -viE '\{\{cofre:|\$\{?[A-Za-z_]|ENCRYPTED_IN|example|placeholder|CHANGE_?ME|<[a-z_]+>|sha256:|sha512:|_PATH|_DIR|_FILE|_URL|_HOST' || true)
+  [ -n "$m" ] && hits+=$'\n'"$f:"$'\n'"$m"
+done
+
+if [ -n "$hits" ]; then
+  echo "🚫 pre-commit: possível segredo em texto puro detectado:" >&2
+  echo "$hits" >&2
+  echo "" >&2
+  echo "Mova para o cofre ~/infra-credenciais.env e use \$VAR via 'source', ou {{cofre:NOME}} em docs." >&2
+  echo "Se for falso positivo: git commit --no-verify (use com consciência)." >&2
+  exit 1
+fi
+exit 0

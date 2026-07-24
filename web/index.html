@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InvTech - Sistema de Gestão de Ativos e Recursos de TI</title>
+    <!-- Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para ícones profissionais de TI e corporativos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Scrollbar customizada e elegante para visual premium */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* Regras de Impressão de alta precisão para o Termo de Responsabilidade */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printSection, #printSection * {
+                visibility: visible;
+            }
+            #printSection {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                color: black;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+            /* Oculta margens padrão do browser */
+            @page {
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+
+    <!-- TELA DE LOGIN (Oculta após autenticação) -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-8 text-center bg-slate-50 border-b border-slate-100">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-2xl text-white mb-4 shadow-lg">
+                    <i class="fa-solid fa-boxes-stacked text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800">InvTech Enterprise</h2>
+                <p class="text-sm text-slate-500 mt-1">Gestão Inteligente de Ativos</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)" class="p-8 space-y-5">
+                <div id="loginError" class="hidden bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-lg text-xs font-semibold text-center">
+                    <!-- Mensagem de erro via JS -->
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">E-mail de Acesso</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="email" id="loginUsername" required placeholder="seu.email@empresa.com" class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Senha</label>
+                    <div class="relative">
+                        <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="password" id="loginPassword" required placeholder="Sua senha" class="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-slate-50 focus:bg-white">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mt-4">
+                    Entrar no Sistema <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="p-4 bg-slate-50 border-t border-slate-100 text-center">
+                <p class="text-[10px] text-slate-400 font-medium">InvTech Systems © 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WRAPPER DO APLICATIVO (Oculto até o login) -->
+    <div id="appContainer" class="hidden flex-col min-h-screen w-full">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white shadow-md z-30 sticky top-0 print:hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3">
+                    <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                        <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-lg tracking-wider block leading-none">InvTech</span>
+                        <span class="text-xs text-indigo-300 font-medium">Enterprise Asset Manager</span>
+                    </div>
+                </div>
+                <!-- Controls right: Simulador de Sessão e Coleta -->
+                <div class="flex items-center space-x-3">
+                    <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 gap-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-full bg-indigo-500 flex items-center justify-center text-xs font-bold">
+                                <i class="fa-solid fa-user"></i>
+                            </div>
+                            <span id="loggedUserName" class="text-xs font-bold text-indigo-300">User</span>
+                        </div>
+                        <div class="w-px h-4 bg-slate-600"></div>
+                        <button onclick="logout()" class="text-[10px] font-bold text-rose-400 hover:text-rose-300 uppercase tracking-wider transition-colors flex items-center gap-1">
+                            <i class="fa-solid fa-right-from-bracket"></i> Sair
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container with Sidebar Grid -->
+    <div class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 print:hidden">
+        
+        <!-- Lateral Navigation Menu -->
+        <aside class="w-full lg:w-64 shrink-0">
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 sticky top-20 flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible">
+                <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase mb-2 hidden lg:block px-3">Painéis e Gestão</p>
+                
+                <button onclick="switchTab('dashboard')" id="tabBtn-dashboard" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-chart-line text-base w-5"></i> Dashboard
+                </button>
+                <button onclick="switchTab('ativos')" id="tabBtn-ativos" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-laptop text-base w-5"></i> Ativos de TI
+                </button>
+                <button onclick="switchTab('alocacoes')" id="tabBtn-alocacoes" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-file-signature text-base w-5"></i> Alocações & Termos
+                </button>
+                <button onclick="switchTab('tipos')" id="tabBtn-tipos" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-tags text-base w-5"></i> Tipos de Ativos
+                </button>
+                <button onclick="switchTab('colaboradores')" id="tabBtn-colaboradores" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-users text-base w-5"></i> Colaboradores
+                </button>
+                <button onclick="switchTab('setores')" id="tabBtn-setores" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-sitemap text-base w-5"></i> Setores
+                </button>
+                <button onclick="switchTab('empresas')" id="tabBtn-empresas" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-building text-base w-5"></i> Empresas (Grupo)
+                </button>
+                <button onclick="switchTab('filiais')" id="tabBtn-filiais" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-building-user text-base w-5"></i> Filiais Unidas
+                </button>
+                
+                <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase mt-4 mb-2 hidden lg:block px-3">Segurança</p>
+                <button onclick="switchTab('usuarios')" id="tabBtn-usuarios" class="nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap">
+                    <i class="fa-solid fa-user-shield text-base w-5"></i> Usuários & Perfis
+                </button>
+            </div>
+        </aside>
+
+        <!-- Dynamic Content Area -->
+        <main class="flex-grow min-w-0">
+            <!-- Toast Container -->
+            <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+            <!-- 1. DASHBOARD VIEW -->
+            <section id="view-dashboard" class="tab-content block space-y-6">
+                <div class="bg-indigo-900 text-white p-6 rounded-2xl shadow-md relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="z-10">
+                        <h2 class="text-lg font-bold">Filtro de Escopo Ativo</h2>
+                        <p class="text-xs text-indigo-200 mt-1" id="dashActiveScopeDesc">Você está visualizando todos os dados globais de TI.</p>
+                    </div>
+                    <div class="text-indigo-400 text-7xl absolute right-4 bottom-[-10px] opacity-15"><i class="fa-solid fa-shield-halved"></i></div>
+                </div>
+
+                <!-- Dashboard Statistics Rows -->
+                <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- Ativos -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ativos de TI</p>
+                            <h3 class="text-2xl font-bold text-slate-800 mt-1" id="dashAtivosCount">0</h3>
+                            <p class="text-[10px] text-indigo-600 mt-1 font-medium" id="dashAtivosPortáteis">0 Portáteis</p>
+                        </div>
+                        <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hidden xl:block">
+                            <i class="fa-solid fa-laptop text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Colaboradores -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Colaboradores</p>
+                            <h3 class="text-2xl font-bold text-emerald-600 mt-1" id="dashColaboradoresCount">0</h3>
+                            <p class="text-[10px] text-slate-400 mt-1">Nesse escopo</p>
+                        </div>
+                        <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hidden xl:block">
+                            <i class="fa-solid fa-users text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Setores -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Setores</p>
+                            <h3 class="text-2xl font-bold text-amber-600 mt-1" id="dashSetoresCount">0</h3>
+                            <p class="text-[10px] text-slate-400 mt-1 font-medium">Globais</p>
+                        </div>
+                        <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl hidden xl:block">
+                            <i class="fa-solid fa-sitemap text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Empresas -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Empresas</p>
+                            <h3 class="text-2xl font-bold text-sky-600 mt-1" id="dashEmpresasCount">0</h3>
+                            <p class="text-[10px] text-slate-400 mt-1">Liberadas</p>
+                        </div>
+                        <div class="p-2.5 bg-sky-50 text-sky-600 rounded-xl hidden xl:block">
+                            <i class="fa-solid fa-building text-xl"></i>
+                        </div>
+                    </div>
+                    <!-- Filiais -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Filiais</p>
+                            <h3 class="text-2xl font-bold text-rose-600 mt-1" id="dashFiliaisCount">0</h3>
+                            <p class="text-[10px] text-slate-400 mt-1">Visíveis</p>
+                        </div>
+                        <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl hidden xl:block">
+                            <i class="fa-solid fa-building-user text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Split View: Resumo Rápido -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Status de Ativos de TI -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4 uppercase tracking-wider flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span> Status Operacional dos Ativos
+                        </h4>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                                    <span>Em Uso</span>
+                                    <span id="dashStatusEmUsoPct">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2">
+                                    <div id="dashStatusEmUsoBar" class="bg-emerald-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                                    <span>Em Estoque</span>
+                                    <span id="dashStatusEstoquePct">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2">
+                                    <div id="dashStatusEstoqueBar" class="bg-amber-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                                    <span>Em Manutenção</span>
+                                    <span id="dashStatusMaintPct">0%</span>
+                                </div>
+                                <div class="w-full bg-slate-100 rounded-full h-2">
+                                    <div id="dashStatusMaintBar" class="bg-rose-500 h-2 rounded-full" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Atalhos de Ação Rápida -->
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm mb-3 uppercase tracking-wider flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Atalhos Rápidos
+                            </h4>
+                            <p class="text-xs text-slate-400 mb-4">Adicione elementos rapidamente no escopo permitido da sua conta de acesso.</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3" id="dashQuickActionsGrid">
+                            <button onclick="openAssetModal()" class="flex items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 rounded-lg text-xs font-semibold transition-all">
+                                <i class="fa-solid fa-laptop text-sm"></i> Novo Ativo
+                            </button>
+                            <button onclick="openCollaboratorModal()" class="flex items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-600 border border-slate-200 rounded-lg text-xs font-semibold transition-all">
+                                <i class="fa-solid fa-user-plus text-sm"></i> Novo Colab.
+                            </button>
+                            <button onclick="openCompanyModal()" class="flex items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-sky-50 text-slate-700 hover:text-sky-600 border border-slate-200 rounded-lg text-xs font-semibold transition-all">
+                                <i class="fa-solid fa-building text-sm"></i> Nova Empresa
+                            </button>
+                            <button onclick="openBranchModal()" class="flex items-center justify-center gap-2 p-3 bg-slate-50 hover:bg-rose-50 text-slate-700 hover:text-rose-600 border border-slate-200 rounded-lg text-xs font-semibold transition-all">
+                                <i class="fa-solid fa-building-user text-sm"></i> Nova Filial
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. ATIVOS DE TI VIEW -->
+            <section id="view-ativos" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-2xl">
+                            <!-- Search -->
+                            <div class="relative flex-grow">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                <input type="text" id="assetSearchInput" placeholder="Pesquisar patrimônio, hostname, modelo..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <!-- Filters -->
+                            <select id="assetTypeFilter" class="border border-slate-200 rounded-lg text-sm px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Preenchido dinamicamente via JS -->
+                            </select>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="openAssetModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-plus"></i> Novo Ativo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Asset Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">ID / Hostname</th>
+                                    <th class="py-3 px-6">Equipamento</th>
+                                    <th class="py-3 px-6">Localização (Alocação)</th>
+                                    <th class="py-3 px-6">Atribuído a</th>
+                                    <th class="py-3 px-6">Status</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assetsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="assetsEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-folder-open text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhum Ativo Registrado</h4>
+                            <p class="text-xs text-slate-400 mt-1 max-w-xs">Adicione ativos manualmente ou utilize o simulador de coleta corporativa.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2.1. ALOCAÇÕES E TERMOS VIEW -->
+            <section id="view-alocacoes" class="tab-content hidden space-y-6">
+                <!-- Top Alocação Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-5 border border-slate-200 shadow-sm rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                            <i class="fa-solid fa-handshake text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Alocado</p>
+                            <h3 class="text-xl font-bold text-slate-800" id="allocStatInUse">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 border border-slate-200 shadow-sm rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                            <i class="fa-solid fa-warehouse text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Em Estoque</p>
+                            <h3 class="text-xl font-bold text-slate-800" id="allocStatStock">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white p-5 border border-slate-200 shadow-sm rounded-xl flex items-center gap-4">
+                        <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                            <i class="fa-solid fa-file-invoice text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Aguardando Termo</p>
+                            <h3 class="text-xl font-bold text-slate-800" id="allocStatPending">0</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Form Alocação Rápida (1/3) -->
+                    <div class="bg-white border border-slate-200 shadow-sm rounded-xl p-5 h-fit space-y-4">
+                        <div class="flex items-center gap-2 border-b border-slate-100 pb-3">
+                            <div class="text-indigo-600 text-lg"><i class="fa-solid fa-link"></i></div>
+                            <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider">Nova Alocação Rápida</h3>
+                        </div>
+                        
+                        <form id="quickAllocForm" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">1. Equipamento em Estoque *</label>
+                                <select id="allocFormAssetId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <!-- Populado via JS com ativos em 'Estoque' -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">2. Colaborador Destinatário *</label>
+                                <select id="allocFormCollabId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <!-- Populado via JS com colaboradores do escopo -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Observações Adicionais (Termo)</label>
+                                <textarea id="allocFormObs" rows="3" placeholder="Ex: Equipamento entregue com bolsa protetora e carregador original..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                            </div>
+
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-4 rounded-lg text-xs transition-all flex items-center justify-center gap-2 shadow-sm">
+                                <i class="fa-solid fa-file-signature"></i> Vincular e Gerar Termo
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Tabela de Termos Ativos (2/3) -->
+                    <div class="bg-white border border-slate-200 shadow-sm rounded-xl overflow-hidden lg:col-span-2">
+                        <div class="p-5 border-b border-slate-150 bg-slate-50 flex items-center justify-between">
+                            <h3 class="font-bold text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Equipamentos Alocados Ativos
+                            </h3>
+                            <span class="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold uppercase" id="allocTableCount">0 Itens</span>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                        <th class="py-3 px-5">Patrimônio / Hostname</th>
+                                        <th class="py-3 px-5">Colaborador</th>
+                                        <th class="py-3 px-5">Alocação Atual</th>
+                                        <th class="py-3 px-5 text-right">Ações de Termo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="allocationsTableBody" class="divide-y divide-slate-100 text-sm">
+                                    <!-- Populado via JS -->
+                                </tbody>
+                            </table>
+                            <div id="allocationsEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-2">
+                                    <i class="fa-solid fa-file-invoice text-xl"></i>
+                                </div>
+                                <h4 class="text-sm font-bold text-slate-600">Nenhuma Alocação Ativa</h4>
+                                <p class="text-xs text-slate-400 mt-1">Utilize o formulário de alocação rápida para associar um equipamento a um colaborador.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2.5. TIPOS DE ATIVOS VIEW -->
+            <section id="view-tipos" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative flex-grow max-w-md">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="typeSearchInput" placeholder="Buscar tipo de ativo pelo nome..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <button onclick="openTypeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Novo Tipo de Ativo
+                        </button>
+                    </div>
+
+                    <!-- Asset Types Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Tipo</th>
+                                    <th class="py-3 px-6">Ícone Indicador</th>
+                                    <th class="py-3 px-6">Descrição</th>
+                                    <th class="py-3 px-6">Equipamentos Registrados</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="typesTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="typesEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-tags text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhum Tipo de Ativo Encontrado</h4>
+                            <p class="text-xs text-slate-400 mt-1">Crie categorias para gerenciar e catalogar seus diferentes hardwares de TI.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. COLABORADORES VIEW -->
+            <section id="view-colaboradores" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-xl">
+                            <div class="relative flex-grow">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                <input type="text" id="collabSearchInput" placeholder="Buscar colaborador por nome, e-mail..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <button onclick="openCollaboratorModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2 self-start md:self-auto">
+                            <i class="fa-solid fa-plus"></i> Novo Colaborador
+                        </button>
+                    </div>
+
+                    <!-- Collaborators Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Nome / Contato</th>
+                                    <th class="py-3 px-6">Cargo</th>
+                                    <th class="py-3 px-6">Setor / Filial / Empresa</th>
+                                    <th class="py-3 px-6">Ativos Atribuídos</th>
+                                    <th class="py-3 px-6">Status</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="collabsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="collabsEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-user-slash text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhum Colaborador Registrado</h4>
+                            <p class="text-xs text-slate-400 mt-1 max-w-xs">Adicione colaboradores e associe-os a setores e filiais para gerir ativos.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SETORES VIEW -->
+            <section id="view-setores" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative flex-grow max-w-md">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="sectorSearchInput" placeholder="Buscar setor pelo nome..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <button onclick="openSectorModal()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Novo Setor
+                        </button>
+                    </div>
+
+                    <!-- Sectors Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Setor</th>
+                                    <th class="py-3 px-6">Descrição</th>
+                                    <th class="py-3 px-6">Total Colaboradores (No Escopo)</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sectorsTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="sectorsEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-sitemap text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhum Setor Encontrado</h4>
+                            <p class="text-xs text-slate-400 mt-1">Crie setores organizacionais globais.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. EMPRESAS VIEW -->
+            <section id="view-empresas" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative flex-grow max-w-md">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="companySearchInput" placeholder="Buscar empresa por nome ou CNPJ..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-sky-500">
+                        </div>
+                        <button onclick="openCompanyModal()" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Nova Empresa (Holding)
+                        </button>
+                    </div>
+
+                    <!-- Companies Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Razão Social / Identificação</th>
+                                    <th class="py-3 px-6">CNPJ Principal</th>
+                                    <th class="py-3 px-6">Cidade / Sede</th>
+                                    <th class="py-3 px-6">Total de Filiais</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companiesTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="companiesEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-building text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhuma Empresa Cadastrada</h4>
+                            <p class="text-xs text-slate-400 mt-1">Crie la holding ou empresa controladora para associar suas filiais.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. FILIAIS VIEW -->
+            <section id="view-filiais" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative flex-grow max-w-md">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="branchSearchInput" placeholder="Buscar filial por nome ou cidade..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        </div>
+                        <button onclick="openBranchModal()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Nova Filial
+                        </button>
+                    </div>
+
+                    <!-- Branches Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Identificação Filial</th>
+                                    <th class="py-3 px-6">Empresa Vinculada (Matriz)</th>
+                                    <th class="py-3 px-6">CNPJ Unidade</th>
+                                    <th class="py-3 px-6">Localização</th>
+                                    <th class="py-3 px-6 text-rose-600">Colaboradores</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="branchesTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                        <div id="branchesEmptyState" class="hidden flex flex-col items-center justify-center p-12 text-center">
+                            <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-3">
+                                <i class="fa-solid fa-building-user text-2xl"></i>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-700">Nenhuma Filial Registrada</h4>
+                            <p class="text-xs text-slate-400 mt-1">Cadastre as unidades físicas associadas a uma empresa.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. USUÁRIOS E PERFIS VIEW -->
+            <section id="view-usuarios" class="tab-content hidden space-y-4">
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="relative flex-grow max-w-md">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="userSearchInput" placeholder="Buscar por usuário ou login..." class="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <button onclick="openUserModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-user-shield"></i> Novo Usuário
+                        </button>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                                    <th class="py-3 px-6">Login de Acesso</th>
+                                    <th class="py-3 px-6">Colaborador Vinculado</th>
+                                    <th class="py-3 px-6">Empresas & Filiais Liberadas</th>
+                                    <th class="py-3 px-6">Módulos do Sistema</th>
+                                    <th class="py-3 px-6">Status</th>
+                                    <th class="py-3 px-6 text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL: ATIVO -->
+    <div id="assetModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="assetModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="assetModalTitle">Cadastrar Novo Ativo</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeAssetModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="assetForm" class="p-6">
+                <input type="hidden" id="formAssetEditId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Código de Patrimônio</label>
+                        <input type="text" id="formAssetId" placeholder="Ex: RDS-023 (opcional)" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Hostname</label>
+                        <input type="text" id="formAssetHostname" placeholder="Ex: NOTE-SUPORTE01" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Ativo *</label>
+                        <input type="text" id="formAssetNome" required placeholder="Ex: Notebook Suporte 01" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Ativo *</label>
+                        <select id="formAssetType" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Preenchido dinamicamente com os tipos cadastrados -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Status Operacional</label>
+                        <select id="formAssetStatus" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="allocated" disabled>Em Uso (gerencie pela tela de Alocações)</option>
+                            <option value="available">Estoque</option>
+                            <option value="maintenance">Manutenção</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fabricante</label>
+                        <input type="text" id="formAssetBrand" placeholder="Ex: Dell, Apple, Lenovo" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Modelo</label>
+                        <input type="text" id="formAssetModel" placeholder="Ex: Latitude 3420" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Filial *</label>
+                        <select id="formAssetBranchId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populado via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Setor *</label>
+                        <select id="formAssetSectorId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populado via JS a partir da filial escolhida -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Processador</label>
+                        <input type="text" id="formAssetCpu" placeholder="Ex: Intel i5" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">RAM</label>
+                            <input type="text" id="formAssetRam" placeholder="Ex: 16GB" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Armazenamento</label>
+                            <input type="text" id="formAssetStorage" placeholder="Ex: 512GB SSD" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Número de Série (S/N)</label>
+                        <input type="text" id="formAssetSerial" placeholder="Serial do fabricante" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeAssetModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar Ativo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TIPO DE ATIVO -->
+    <div id="typeModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="typeModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="typeModalTitle">Cadastrar Tipo de Ativo</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeTypeModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="typeForm" class="p-6">
+                <input type="hidden" id="formTypeEditId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome da Categoria/Tipo *</label>
+                        <input type="text" id="formTypeName" required placeholder="Ex: Coletor de Dados, Nobreak, Monitor" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ícone Representativo (Indicador) *</label>
+                        <select id="formTypeIcon" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="fa-laptop">💻 Notebook / Computador Portátil</option>
+                            <option value="fa-desktop">🖥️ Desktop / Computador Fixo</option>
+                            <option value="fa-server">🖧 Servidor / Infraestrutura</option>
+                            <option value="fa-network-wired">🌐 Ativo de Rede / Switch / Router</option>
+                            <option value="fa-print">🖨️ Impressora / Multifuncional</option>
+                            <option value="fa-tablet-screen-button">📱 Tablet / Smartphone</option>
+                            <option value="fa-barcode">🏷️ Coletor de Dados / Leitor</option>
+                            <option value="fa-bolt">⚡ Nobreak / Estabilizador</option>
+                            <option value="fa-circle-question">❔ Outro Equipamento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
+                        <textarea id="formTypeDesc" rows="3" placeholder="Insira detalhes sobre essa categoria de equipamentos de TI..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeTypeModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar Categoria</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: COLABORADOR -->
+    <div id="collabModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="collabModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="collabModalTitle">Cadastrar Novo Colaborador</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeCollabModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="collabForm" class="p-6">
+                <input type="hidden" id="formCollabEditId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Completo *</label>
+                        <input type="text" id="formCollabName" required placeholder="Ex: João da Silva" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">E-mail Corporativo *</label>
+                            <input type="email" id="formCollabEmail" required placeholder="Ex: joao.silva@empresa.com" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Cargo *</label>
+                            <input type="text" id="formCollabRole" required placeholder="Ex: Analista de TI" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Filial Trabalho *</label>
+                            <select id="formCollabBranch" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Populado via JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Setor Organização *</label>
+                            <select id="formCollabSector" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Populado via JS -->
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Status do Contrato *</label>
+                        <select id="formCollabStatus" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="active">Ativo</option>
+                            <option value="inactive">Desligado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeCollabModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: SETOR -->
+    <div id="sectorModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="sectorModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="sectorModalTitle">Cadastrar Novo Setor</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeSectorModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="sectorForm" class="p-6">
+                <input type="hidden" id="formSectorEditId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome do Setor Organizacional *</label>
+                        <input type="text" id="formSectorName" required placeholder="Ex: Tecnologia da Informação" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição</label>
+                        <textarea id="formSectorDesc" rows="3" placeholder="Frente e objetivos do setor de forma global..." class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeSectorModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EMPRESA -->
+    <div id="companyModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="companyModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="companyModalTitle">Cadastrar Nova Empresa</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeCompanyModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="companyForm" class="p-6">
+                <input type="hidden" id="formCompanyEditId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Razão Social / Nome Fantasia *</label>
+                        <input type="text" id="formCompanyName" required placeholder="Ex: InvTech Group S/A" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">CNPJ Principal *</label>
+                        <input type="text" id="formCompanyCnpj" required placeholder="Ex: 12.345.678/0001-90" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Cidade Sede *</label>
+                            <input type="text" id="formCompanyCity" required placeholder="Ex: São Paulo" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado (UF) *</label>
+                            <input type="text" id="formCompanyState" required maxlength="2" placeholder="Ex: SP" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeCompanyModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: FILIAL -->
+    <div id="branchModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="branchModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="branchModalTitle">Cadastrar Nova Filial</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeBranchModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="branchForm" class="p-6">
+                <input type="hidden" id="formBranchEditId">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Empresa Vinculada (Matriz) *</label>
+                        <select id="formBranchCompanyId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <!-- Populado via JS -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome Fantasia da Filial *</label>
+                        <input type="text" id="formBranchName" required placeholder="Ex: Unidade Curitiba, Escritório RJ" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">CNPJ da Filial *</label>
+                        <input type="text" id="formBranchCnpj" required placeholder="Ex: 12.345.678/0002-71" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Cidade da Unidade *</label>
+                            <input type="text" id="formBranchCity" required placeholder="Ex: Curitiba" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Estado (UF) *</label>
+                            <input type="text" id="formBranchState" required maxlength="2" placeholder="Ex: PR" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase">
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeBranchModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: USUÁRIO -->
+    <div id="userModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="userModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="userModalTitle">Cadastrar Novo Usuário</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeUserModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="userForm" class="p-6">
+                <input type="hidden" id="formUserEditId">
+                <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">E-mail de Acesso *</label>
+                            <input type="email" id="formUserLogin" required placeholder="Ex: silva.ti@empresa.com" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="col-span-2" id="formUserPasswordWrapper">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Senha Temporária *</label>
+                            <input type="password" id="formUserPassword" minlength="8" placeholder="Mínimo 8 caracteres — usuário troca no 1º acesso" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div class="col-span-2">
+                            <div class="flex items-center justify-between mb-1">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Perfil (Role) *</label>
+                                <button type="button" onclick="openRoleModal()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-700">+ Nova Role</button>
+                            </div>
+                            <select id="formUserRoleId" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <!-- Populado via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Escopo de acesso -->
+                    <div>
+                        <span class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Escopo de Acesso:</span>
+                        <div class="flex flex-col gap-2 bg-slate-50 p-3 rounded-lg border border-slate-150">
+                            <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                <input type="radio" name="formUserScopeType" value="all" checked onchange="onUserScopeTypeChange()" class="text-indigo-600 focus:ring-indigo-500"> Todas as empresas e filiais
+                            </label>
+                            <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                <input type="radio" name="formUserScopeType" value="company" onchange="onUserScopeTypeChange()" class="text-indigo-600 focus:ring-indigo-500"> Uma empresa específica
+                            </label>
+                            <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                <input type="radio" name="formUserScopeType" value="branch" onchange="onUserScopeTypeChange()" class="text-indigo-600 focus:ring-indigo-500"> Uma filial específica
+                            </label>
+                            <select id="formUserScopeTarget" class="hidden w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-1">
+                                <!-- Populado via JS -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="formUserStatusWrapper">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Status da Conta *</label>
+                        <select id="formUserStatus" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="active">Ativo</option>
+                            <option value="inactive">Inativo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeUserModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar Usuário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: NOVA ROLE (PERFIL) -->
+    <div id="roleModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300" id="roleModalContent">
+            <div class="px-6 py-4 border-b border-slate-150 flex items-center justify-between bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800">Cadastrar Nova Role</h3>
+                <button type="button" class="text-slate-400 hover:text-slate-600" onclick="closeRoleModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="roleForm" class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nome da Role *</label>
+                        <input type="text" id="formRoleName" required placeholder="Ex: Gestor de Filial" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <span class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Módulos liberados (acesso total: ler/criar/editar/excluir):</span>
+                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-150" id="roleModulesContainer">
+                            <!-- Populado via JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-end gap-2">
+                    <button type="button" onclick="closeRoleModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-100 px-4 py-2 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-all">Salvar Role</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: TROCA DE SENHA OBRIGATÓRIA (não pode ser fechado sem concluir) -->
+    <div id="changePasswordModal" class="fixed inset-0 bg-slate-900 z-[70] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 text-center bg-slate-50 border-b border-slate-100">
+                <div class="inline-flex items-center justify-center w-14 h-14 bg-amber-500 rounded-2xl text-white mb-3 shadow-lg">
+                    <i class="fa-solid fa-key text-2xl"></i>
+                </div>
+                <h2 class="text-lg font-bold text-slate-800">Troca de Senha Obrigatória</h2>
+                <p class="text-xs text-slate-500 mt-1">Defina uma nova senha para continuar.</p>
+            </div>
+            <form id="changePasswordForm" class="p-6 space-y-4">
+                <div id="changePasswordError" class="hidden bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-lg text-xs font-semibold text-center"></div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Senha Atual</label>
+                    <input type="password" id="changePasswordOld" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nova Senha (mín. 8 caracteres)</label>
+                    <input type="password" id="changePasswordNew" required minlength="8" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md">Trocar Senha e Continuar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL CONFIRMAÇÃO EXCLUSÃO -->
+    <div id="deleteModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-xl max-w-sm w-full p-6 text-center shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-200" id="deleteModalContent">
+            <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-trash-can text-xl"></i>
+            </div>
+            <h4 class="font-bold text-slate-800 text-base">Confirmar Exclusão</h4>
+            <p class="text-xs text-slate-500 mt-2" id="deleteModalMsg">Tem certeza que deseja remover este item? Esta ação não pode ser desfeita.</p>
+            <div class="grid grid-cols-2 gap-3 mt-6">
+                <button onclick="closeDeleteModal()" class="border border-slate-200 text-slate-600 hover:bg-slate-50 py-2.5 rounded-lg text-xs font-semibold transition-all">Cancelar</button>
+                <button id="deleteModalConfirmBtn" class="bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-lg text-xs font-semibold transition-all">Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW: TERMO DE RESPONSABILIDADE (MODAL PREVIEW ANTES DE IMPRIMIR) -->
+    <div id="termPreviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
+        <div class="bg-white rounded-2xl w-full max-w-4xl h-[90vh] overflow-hidden shadow-2xl border border-slate-200 transform scale-95 opacity-0 transition-all duration-300 flex flex-col" id="termPreviewModalContent">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="text-indigo-600 text-base"><i class="fa-solid fa-file-pdf"></i></span>
+                    <h3 class="text-sm font-bold text-slate-800">Visualizar Termo de Responsabilidade</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="printCurrentTerm()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition-all">
+                        <i class="fa-solid fa-print"></i> Imprimir Documento
+                    </button>
+                    <button type="button" class="text-slate-400 hover:text-slate-600 p-1" onclick="closeTermPreviewModal()"><i class="fa-solid fa-xmark text-lg"></i></button>
+                </div>
+            </div>
+            <!-- Papel Virtual Simulado de Alta Fidelidade -->
+            <div class="flex-grow bg-slate-100 p-6 overflow-y-auto flex justify-center">
+                <div class="bg-white w-[210mm] min-h-[297mm] shadow-lg p-12 text-slate-950 text-xs leading-relaxed space-y-6 border border-slate-200 self-start" id="termPaperContent">
+                    <!-- Conteúdo gerado via JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AREA DE IMPRESSÃO REAL (Oculto em tela, visível em print via CSS e HTML print:) -->
+    <div id="printSection" class="hidden print:block bg-white p-12 text-black text-xs leading-relaxed space-y-6"></div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-900 text-slate-400 border-t border-slate-800 text-xs py-4 print:hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>
+                <span class="font-semibold text-slate-300">InvTech Enterprise</span> - Sistema de Controle de Ativos Inteligentes.
+            </div>
+            <div class="flex items-center gap-4">
+                <span>Versão 3.2.0 (Controle de Ativos Dinâmicos & Perfis Granulares)</span>
+                <span class="text-emerald-500 font-semibold"><i class="fa-solid fa-circle text-[8px] animate-pulse"></i> Sincronizado</span>
+            </div>
+        </div>
+    </footer>
+    </div> <!-- Fim do AppContainer -->
+
+    <!-- LOGICA DO SISTEMA (JAVASCRIPT) -->
+    <script>
+        const API_BASE = '/api/v1';
+
+        const MODULES = [
+            { key: 'dashboard', label: 'Dashboard' },
+            { key: 'companies', label: 'Empresas' },
+            { key: 'branches', label: 'Filiais' },
+            { key: 'sectors', label: 'Setores' },
+            { key: 'collaborators', label: 'Colaboradores' },
+            { key: 'asset_types', label: 'Tipos de Ativos' },
+            { key: 'assets', label: 'Ativos de TI' },
+            { key: 'allocations', label: 'Alocações' },
+            { key: 'users', label: 'Usuários' },
+            { key: 'roles', label: 'Roles' },
+            { key: 'import', label: 'Importação' },
+        ];
+        const ACTIONS = ['create', 'read', 'update', 'delete'];
+
+        // Estado da aplicação — tudo carregado da API real, nada em localStorage.
+        let companies = [];
+        let branches = [];
+        let sectors = [];
+        let assetTypes = [];
+        let collaborators = [];
+        let assets = [];
+        let allocations = [];
+        let users = [];
+        let roles = [];
+
+        let currentUser = null;
+        let deleteCallback = null;
+        let selectedAssetForTerm = null;
+
+        // ---------------- API client ----------------
+
+        function getCsrfCookie() {
+            const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
+            return match ? decodeURIComponent(match[1]) : null;
+        }
+
+        async function apiFetch(path, { method = 'GET', body } = {}) {
+            const headers = { 'Content-Type': 'application/json' };
+            if (method !== 'GET') {
+                const csrf = getCsrfCookie();
+                if (csrf) headers['X-CSRF-Token'] = csrf;
+            }
+            const resp = await fetch(API_BASE + path, {
+                method,
+                headers,
+                credentials: 'include',
+                body: body !== undefined ? JSON.stringify(body) : undefined,
+            });
+
+            let data = null;
+            try { data = await resp.json(); } catch (e) { /* corpo vazio (ex: 204) */ }
+
+            if (!resp.ok) {
+                const err = new Error((data && data.error) || `Erro ${resp.status}`);
+                err.status = resp.status;
+                throw err;
+            }
+            return data;
+        }
+
+        // fetchListOrEmpty — RBAC agora pode negar um módulo inteiro pro
+        // usuário (403, esperado pra role sem permissão nele). Sem isso,
+        // loadAllData usava Promise.all puro: um 403 em qualquer módulo
+        // rejeitava tudo e a tela ficava em branco pra QUALQUER usuário
+        // restrito, mesmo em módulos que ele tem acesso — inutilizava o
+        // RBAC na prática. 403 vira lista vazia (silencioso); outros erros
+        // (500, rede) ainda aparecem no console pra não mascarar bug real.
+        async function fetchListOrEmpty(path) {
+            try {
+                return await apiFetch(path);
+            } catch (err) {
+                if (err.status === 403) return [];
+                console.error(`falha ao carregar ${path}:`, err);
+                return [];
+            }
+        }
+
+        // ---------------- Autenticação ----------------
+
+        window.onload = function () {
+            checkAuth();
+        };
+
+        async function checkAuth() {
+            let resp;
+            try {
+                resp = await fetch(API_BASE + '/dashboard', { credentials: 'include' });
+            } catch (e) {
+                showLogin();
+                return;
+            }
+            if (resp.status === 200) {
+                await loadAllData();
+                showApp();
+            } else if (resp.status === 403) {
+                showChangePasswordModal(true);
+            } else {
+                showLogin();
+            }
+        }
+
+        function showApp() {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.remove('hidden');
+            if (currentUser) document.getElementById('loggedUserName').innerText = currentUser.email;
+            setupEventListeners();
+            syncDropdowns();
+            renderAll();
+            switchTab('dashboard');
+        }
+
+        function showLogin() {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorMsg = document.getElementById('loginError');
+            errorMsg.classList.add('hidden');
+
+            try {
+                const resp = await fetch(API_BASE + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrfCookie() || '' },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password }),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok) {
+                    errorMsg.innerText = data.error || 'Usuário ou senha incorretos.';
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+                currentUser = data.user_info;
+                document.getElementById('loginForm').reset();
+                if (currentUser.must_change_password) {
+                    showChangePasswordModal(true);
+                } else {
+                    await loadAllData();
+                    showApp();
+                }
+            } catch (err) {
+                errorMsg.innerText = 'Falha ao conectar com o servidor.';
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        async function logout() {
+            try { await apiFetch('/auth/logout', { method: 'POST' }); } catch (e) { /* ignora */ }
+            currentUser = null;
+            document.getElementById('changePasswordModal').classList.add('hidden');
+            document.getElementById('changePasswordModal').classList.remove('flex');
+            showLogin();
+            showToast('Sessão encerrada com sucesso.', 'info');
+        }
+
+        function showChangePasswordModal(forced) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('appContainer').classList.add('hidden');
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.getElementById('changePasswordForm').dataset.forced = forced ? '1' : '0';
+        }
+
+        async function handleChangePassword(e) {
+            e.preventDefault();
+            const old = document.getElementById('changePasswordOld').value;
+            const nw = document.getElementById('changePasswordNew').value;
+            const errorMsg = document.getElementById('changePasswordError');
+            errorMsg.classList.add('hidden');
+            try {
+                await apiFetch('/auth/change-password', { method: 'POST', body: { old, new: nw } });
+                document.getElementById('changePasswordForm').reset();
+                document.getElementById('changePasswordModal').classList.add('hidden');
+                document.getElementById('changePasswordModal').classList.remove('flex');
+                await loadAllData();
+                showApp();
+                showToast('Senha alterada com sucesso.');
+            } catch (err) {
+                errorMsg.innerText = err.message || 'Falha ao trocar a senha.';
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        // ---------------- Carga de dados ----------------
+
+        async function loadAllData() {
+            [companies, collaborators, assetTypes, assets, allocations, roles, users] = await Promise.all([
+                fetchListOrEmpty('/companies'),
+                fetchListOrEmpty('/collaborators'),
+                fetchListOrEmpty('/asset-types'),
+                fetchListOrEmpty('/assets'),
+                fetchListOrEmpty('/allocations'),
+                fetchListOrEmpty('/roles'),
+                fetchListOrEmpty('/users'),
+            ]);
+
+            branches = [];
+            for (const c of companies) {
+                const bs = await fetchListOrEmpty(`/companies/${c.id}/branches`);
+                branches.push(...bs);
+            }
+            sectors = [];
+            for (const b of branches) {
+                const ss = await fetchListOrEmpty(`/branches/${b.id}/sectors`);
+                sectors.push(...ss);
+            }
+        }
+
+        // esc() — os módulos renderizam via template literal + innerHTML;
+        // todo campo de texto livre do usuário (nome, e-mail, notas etc.)
+        // precisa passar por aqui antes de entrar no HTML, senão um nome
+        // como "<img src=x onerror=...>" persiste e executa no navegador
+        // de quem abrir a tela (XSS armazenado).
+        function esc(value) {
+            if (value === null || value === undefined) return '';
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ---------------- Helpers de lookup ----------------
+
+        function companyName(id) { const c = companies.find(x => x.id === id); return esc(c ? c.nome : ''); }
+        function branchName(id) { const b = branches.find(x => x.id === id); return esc(b ? b.nome : ''); }
+        function sectorName(id) { const s = sectors.find(x => x.id === id); return esc(s ? s.nome : ''); }
+        function assetTypeObj(id) { return assetTypes.find(x => x.id === id); }
+        function collaboratorObj(id) { return collaborators.find(x => x.id === id); }
+        function branchesOfCompany(companyId) { return branches.filter(b => b.company_id === companyId); }
+        function sectorsOfBranch(branchId) { return sectors.filter(s => s.branch_id === branchId); }
+
+        function activeAllocationForAsset(assetId) {
+            return allocations.find(a => a.asset_id === assetId && !a.returned_at) || null;
+        }
+
+        const ASSET_STATUS_LABEL = { available: 'Estoque', allocated: 'Em Uso', maintenance: 'Manutenção' };
+        const ASSET_STATUS_BADGE = {
+            allocated: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+            available: 'bg-amber-100 text-amber-800 border border-amber-200',
+            maintenance: 'bg-rose-100 text-rose-800 border border-rose-200',
+        };
+
+        // ---------------- Dropdowns ----------------
+
+        function syncDropdowns() {
+            const typeFilter = document.getElementById('assetTypeFilter');
+            typeFilter.innerHTML = '<option value="">Todos os Tipos</option>';
+            assetTypes.forEach(t => { typeFilter.innerHTML += `<option value="${t.id}">${esc(t.nome)}</option>`; });
+
+            const formAssetTypeSelect = document.getElementById('formAssetType');
+            formAssetTypeSelect.innerHTML = '<option value="" disabled selected>Escolha o Tipo de Ativo...</option>';
+            assetTypes.forEach(t => { formAssetTypeSelect.innerHTML += `<option value="${t.id}">${esc(t.nome)}</option>`; });
+
+            const companyBranchSelect = document.getElementById('formBranchCompanyId');
+            companyBranchSelect.innerHTML = '<option value="" disabled selected>Escolha a Empresa...</option>';
+            companies.forEach(comp => { companyBranchSelect.innerHTML += `<option value="${comp.id}">${esc(comp.nome)}</option>`; });
+
+            const assetBranchSelect = document.getElementById('formAssetBranchId');
+            assetBranchSelect.innerHTML = '<option value="" disabled selected>Escolha a Filial...</option>';
+            branches.forEach(b => {
+                assetBranchSelect.innerHTML += `<option value="${b.id}">${companyName(b.company_id)} > ${esc(b.nome)}</option>`;
+            });
+            document.getElementById('formAssetBranchId').onchange = () => populateSectorSelect('formAssetBranchId', 'formAssetSectorId');
+            populateSectorSelect('formAssetBranchId', 'formAssetSectorId');
+
+            const colBranchSelect = document.getElementById('formCollabBranch');
+            colBranchSelect.innerHTML = '<option value="" disabled selected>Escolha a Filial...</option>';
+            branches.forEach(b => {
+                colBranchSelect.innerHTML += `<option value="${b.id}">${companyName(b.company_id)} > ${esc(b.nome)}</option>`;
+            });
+            document.getElementById('formCollabBranch').onchange = () => populateSectorSelect('formCollabBranch', 'formCollabSector');
+            populateSectorSelect('formCollabBranch', 'formCollabSector');
+
+            const simCollab = document.getElementById('formUserRoleId');
+            if (simCollab) {
+                simCollab.innerHTML = '<option value="" disabled selected>Escolha a Role...</option>';
+                roles.forEach(r => { simCollab.innerHTML += `<option value="${r.id}">${esc(r.name)}</option>`; });
+            }
+
+            syncAllocationDropdowns();
+        }
+
+        function populateSectorSelect(branchSelectId, sectorSelectId) {
+            const branchId = document.getElementById(branchSelectId).value;
+            const sectorSelect = document.getElementById(sectorSelectId);
+            sectorSelect.innerHTML = '<option value="" disabled selected>Escolha o Setor...</option>';
+            sectorsOfBranch(branchId).forEach(s => { sectorSelect.innerHTML += `<option value="${s.id}">${esc(s.nome)}</option>`; });
+        }
+
+        function syncAllocationDropdowns() {
+            const allocAssetSelect = document.getElementById('allocFormAssetId');
+            const allocCollabSelect = document.getElementById('allocFormCollabId');
+            if (!allocAssetSelect || !allocCollabSelect) return;
+
+            const assetsInStock = assets.filter(a => a.status === 'available');
+            allocAssetSelect.innerHTML = '<option value="" disabled selected>Selecione um Equipamento em Estoque...</option>';
+            assetsInStock.forEach(a => {
+                const type = assetTypeObj(a.asset_type_id);
+                allocAssetSelect.innerHTML += `<option value="${a.id}">${a.asset_tag ? '[' + esc(a.asset_tag) + '] ' : ''}${esc(a.nome)} (${type ? esc(type.nome) : 'Outro'}${a.serial_number ? ' - S/N: ' + esc(a.serial_number) : ''})</option>`;
+            });
+
+            allocCollabSelect.innerHTML = '<option value="" disabled selected>Selecione o Colaborador...</option>';
+            collaborators.forEach(c => {
+                allocCollabSelect.innerHTML += `<option value="${c.id}">${esc(c.nome)} (${sectorName(c.sector_id)} - ${branchName(c.branch_id)})</option>`;
+            });
+        }
+
+        function onUserScopeTypeChange() {
+            const type = document.querySelector('input[name="formUserScopeType"]:checked').value;
+            const target = document.getElementById('formUserScopeTarget');
+            if (type === 'all') {
+                target.classList.add('hidden');
+                target.innerHTML = '';
+                return;
+            }
+            target.classList.remove('hidden');
+            if (type === 'company') {
+                target.innerHTML = companies.map(c => `<option value="${c.id}">${esc(c.nome)}</option>`).join('');
+            } else {
+                target.innerHTML = branches.map(b => `<option value="${b.id}">${companyName(b.company_id)} > ${esc(b.nome)}</option>`).join('');
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+                section.classList.remove('block');
+            });
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+                btn.className = "nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-all w-full text-left whitespace-nowrap";
+            });
+            const activeView = document.getElementById(`view-${tabId}`);
+            if (activeView) { activeView.classList.remove('hidden'); activeView.classList.add('block'); }
+            const activeBtn = document.getElementById(`tabBtn-${tabId}`);
+            if (activeBtn) activeBtn.className = "nav-tab-btn flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm font-semibold text-indigo-600 bg-indigo-50/80 transition-all w-full text-left whitespace-nowrap";
+        }
+
+        // ---------------- Render ----------------
+
+        function renderAll() {
+            renderDashboard();
+            renderAssets();
+            renderAssetTypes();
+            renderCollaborators();
+            renderSectors();
+            renderCompanies();
+            renderBranches();
+            renderUsers();
+            renderAllocations();
+        }
+
+        function renderDashboard() {
+            document.getElementById('dashAtivosCount').innerText = assets.length;
+            document.getElementById('dashColaboradoresCount').innerText = collaborators.length;
+            document.getElementById('dashSetoresCount').innerText = sectors.length;
+            document.getElementById('dashEmpresasCount').innerText = companies.length;
+            document.getElementById('dashFiliaisCount').innerText = branches.length;
+
+            const notebookTypeIds = assetTypes.filter(t => t.nome.toLowerCase().includes('notebook') || t.nome.toLowerCase().includes('laptop')).map(t => t.id);
+            const notebooks = assets.filter(a => notebookTypeIds.includes(a.asset_type_id)).length;
+            document.getElementById('dashAtivosPortáteis').innerText = `${notebooks} Portáteis`;
+            document.getElementById('dashActiveScopeDesc').innerText = 'Você está visualizando todos os dados de TI do seu tenant.';
+
+            const total = assets.length || 1;
+            const emUso = assets.filter(a => a.status === 'allocated').length;
+            const estoque = assets.filter(a => a.status === 'available').length;
+            const maint = assets.filter(a => a.status === 'maintenance').length;
+
+            const set = (pctId, barId, val) => {
+                const pct = Math.round((val / total) * 100);
+                document.getElementById(pctId).innerText = `${pct}%`;
+                document.getElementById(barId).style.width = `${pct}%`;
+            };
+            set('dashStatusEmUsoPct', 'dashStatusEmUsoBar', emUso);
+            set('dashStatusEstoquePct', 'dashStatusEstoqueBar', estoque);
+            set('dashStatusMaintPct', 'dashStatusMaintBar', maint);
+        }
+
+        function renderAssets() {
+            const search = document.getElementById('assetSearchInput').value.toLowerCase();
+            const typeFilter = document.getElementById('assetTypeFilter').value;
+            const tbody = document.getElementById('assetsTableBody');
+            tbody.innerHTML = '';
+
+            const filtered = assets.filter(a => {
+                const haystack = [a.nome, a.hostname, a.brand, a.model, a.asset_tag].filter(Boolean).join(' ').toLowerCase();
+                const matchesSearch = haystack.includes(search);
+                const matchesType = typeFilter === '' || a.asset_type_id === typeFilter;
+                return matchesSearch && matchesType;
+            });
+
+            document.getElementById('assetsEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const alloc = activeAllocationForAsset(item.id);
+                const collab = alloc ? collaboratorObj(alloc.collaborator_id) : null;
+                const responsibleName = collab ? esc(collab.nome) : '<span class="text-amber-600 font-semibold flex items-center gap-1"><i class="fa-solid fa-box"></i> Estoque</span>';
+
+                const branch = branches.find(b => b.id === item.branch_id);
+                const allocationStr = branch ? `${esc(branch.nome)} (${companyName(branch.company_id)})` : '<span class="text-rose-500 font-bold">Sem Filial</span>';
+
+                const type = assetTypeObj(item.asset_type_id);
+                const typeIcon = type && type.icon ? esc(type.icon) : 'fa-circle-question';
+                const typeName = type ? esc(type.nome) : 'Desconhecido';
+
+                const badgeClass = ASSET_STATUS_BADGE[item.status] || 'bg-slate-100 text-slate-700 border border-slate-200';
+                const statusBadge = `<span class="px-2 py-0.5 rounded-full text-xs font-semibold ${badgeClass}">${ASSET_STATUS_LABEL[item.status] || esc(item.status)}</span>`;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6">
+                            <div class="font-mono font-bold text-slate-900">${item.asset_tag ? esc(item.asset_tag) : '<span class=\"text-slate-300\">—</span>'}</div>
+                            <div class="text-xs text-indigo-500 font-mono">${esc(item.hostname) || ''}</div>
+                        </td>
+                        <td class="py-3 px-6">
+                            <span class="font-bold text-slate-800">${esc(item.nome)}</span>
+                            <div class="text-[10px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
+                                <i class="fa-solid ${typeIcon} text-indigo-500"></i> ${typeName}${item.brand ? ' | ' + esc(item.brand) : ''}${item.model ? ' ' + esc(item.model) : ''} | S/N: ${esc(item.serial_number) || 'N/A'}
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-xs text-slate-500">${allocationStr}</td>
+                        <td class="py-3 px-6 text-xs font-medium">${responsibleName}</td>
+                        <td class="py-3 px-6">${statusBadge}</td>
+                        <td class="py-3 px-6 text-right font-medium">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editAsset('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Editar Ativo"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteAsset('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors" title="Excluir"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderAssetTypes() {
+            const search = document.getElementById('typeSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('typesTableBody');
+            tbody.innerHTML = '';
+            const filtered = assetTypes.filter(t => t.nome.toLowerCase().includes(search));
+            document.getElementById('typesEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const totalAssets = assets.filter(a => a.asset_type_id === item.id).length;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 font-bold text-slate-800">${esc(item.nome)}</td>
+                        <td class="py-3 px-6">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-semibold text-xs border border-indigo-150">
+                                <i class="fa-solid ${item.icon ? esc(item.icon) : 'fa-circle-question'}"></i> ${item.icon ? esc(item.icon) : '-'}
+                            </span>
+                        </td>
+                        <td class="py-3 px-6 text-slate-500 text-xs">${item.description ? esc(item.description) : '-'}</td>
+                        <td class="py-3 px-6 text-xs font-semibold text-slate-700">
+                            <span class="px-2.5 py-1 bg-slate-100 rounded-md border border-slate-200">${totalAssets} equipamentos</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editAssetType('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteAssetType('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCollaborators() {
+            const search = document.getElementById('collabSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('collabsTableBody');
+            tbody.innerHTML = '';
+            const filtered = collaborators.filter(c => (c.nome + ' ' + (c.email || '')).toLowerCase().includes(search));
+            document.getElementById('collabsEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const branch = branches.find(b => b.id === item.branch_id);
+                const sector = sectors.find(s => s.id === item.sector_id);
+                const assignedAssetsCount = allocations.filter(a => a.collaborator_id === item.id && !a.returned_at).length;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6">
+                            <div class="font-bold text-slate-800">${esc(item.nome)}</div>
+                            <div class="text-xs text-slate-400 font-mono">${esc(item.email) || ''}</div>
+                        </td>
+                        <td class="py-3 px-6 font-medium text-slate-700">${item.cargo ? esc(item.cargo) : '-'}</td>
+                        <td class="py-3 px-6 text-xs text-slate-500">
+                            <div>Setor: <span class="font-semibold text-slate-700">${sector ? esc(sector.nome) : 'N/A'}</span></div>
+                            <div class="text-[10px] text-slate-400">${branch ? esc(branch.nome) : '-'} (${branch ? companyName(branch.company_id) : ''})</div>
+                        </td>
+                        <td class="py-3 px-6">
+                            <span class="inline-flex items-center gap-1 text-xs font-semibold ${assignedAssetsCount > 0 ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400'} px-2 py-1 rounded-md">
+                                <i class="fa-solid fa-laptop text-[10px]"></i> ${assignedAssetsCount} ativos
+                            </span>
+                        </td>
+                        <td class="py-3 px-6">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${item.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600'}">${item.status === 'active' ? 'Ativo' : 'Desligado'}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editCollaborator('${item.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteCollaborator('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderSectors() {
+            const search = document.getElementById('sectorSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('sectorsTableBody');
+            tbody.innerHTML = '';
+            const filtered = sectors.filter(s => s.nome.toLowerCase().includes(search));
+            document.getElementById('sectorsEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const collabsCount = collaborators.filter(c => c.sector_id === item.id).length;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 font-bold text-slate-800">${esc(item.nome)}</td>
+                        <td class="py-3 px-6 text-slate-500 text-xs">${item.description ? esc(item.description) : '-'}</td>
+                        <td class="py-3 px-6 font-semibold text-xs text-amber-600">${collabsCount} Colaboradores</td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editSector('${item.id}')" class="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteSector('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderCompanies() {
+            const search = document.getElementById('companySearchInput').value.toLowerCase();
+            const tbody = document.getElementById('companiesTableBody');
+            tbody.innerHTML = '';
+            const filtered = companies.filter(c => (c.nome + ' ' + c.cnpj).toLowerCase().includes(search));
+            document.getElementById('companiesEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const branchesCount = branches.filter(b => b.company_id === item.id).length;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 font-bold text-slate-800">${esc(item.nome)}</td>
+                        <td class="py-3 px-6 text-xs font-mono text-slate-500">${esc(item.cnpj)}</td>
+                        <td class="py-3 px-6 text-xs font-medium">${esc(item.city) || ''}${item.city && item.state ? ' / ' : ''}${esc(item.state) || ''}</td>
+                        <td class="py-3 px-6 text-xs font-semibold text-sky-600">${branchesCount} Unidades</td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editCompany('${item.id}')" class="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteCompany('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderBranches() {
+            const search = document.getElementById('branchSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('branchesTableBody');
+            tbody.innerHTML = '';
+            const filtered = branches.filter(b => (b.nome + ' ' + (b.city || '')).toLowerCase().includes(search));
+            document.getElementById('branchesEmptyState').classList.toggle('hidden', filtered.length !== 0);
+            if (filtered.length === 0) return;
+
+            filtered.forEach(item => {
+                const collabsCount = collaborators.filter(c => c.branch_id === item.id).length;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 font-bold text-slate-800">${esc(item.nome)}</td>
+                        <td class="py-3 px-6 text-slate-500 text-xs">${companyName(item.company_id) || '<span class="text-rose-500 font-bold">Inexistente</span>'}</td>
+                        <td class="py-3 px-6 text-xs font-mono text-slate-500">${item.cnpj ? esc(item.cnpj) : '-'}</td>
+                        <td class="py-3 px-6 text-xs font-medium">${esc(item.city) || ''}${item.city && item.state ? ' / ' : ''}${esc(item.state) || ''}</td>
+                        <td class="py-3 px-6 text-xs font-semibold text-rose-600">${collabsCount} Colaboradores</td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editBranch('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteBranch('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderUsers() {
+            const search = document.getElementById('userSearchInput').value.toLowerCase();
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = '';
+            const filtered = users.filter(u => u.email.toLowerCase().includes(search));
+
+            filtered.forEach(item => {
+                const role = roles.find(r => r.id === item.role_id);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-6 font-mono font-bold text-slate-900">👤 ${esc(item.email)}</td>
+                        <td class="py-3 px-6 text-xs font-medium text-slate-700">${role ? esc(role.name) : '<span class="text-rose-500">—</span>'}</td>
+                        <td class="py-3 px-6 text-xs">${item.must_change_password ? '<span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">Troca pendente</span>' : '<span class="text-slate-400">—</span>'}</td>
+                        <td class="py-3 px-6">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold ${item.status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">${item.status === 'active' ? 'Ativo' : 'Inativo'}</span>
+                        </td>
+                        <td class="py-3 px-6 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="editUser('${item.id}')" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                                <button onclick="askDeleteUser('${item.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderAllocations() {
+            const tbody = document.getElementById('allocationsTableBody');
+            const emptyState = document.getElementById('allocationsEmptyState');
+            if (!tbody || !emptyState) return;
+            tbody.innerHTML = '';
+
+            const active = allocations.filter(a => !a.returned_at);
+            const totalStock = assets.filter(a => a.status === 'available').length;
+            document.getElementById('allocStatInUse').innerText = active.length;
+            document.getElementById('allocStatStock').innerText = totalStock;
+            document.getElementById('allocStatPending').innerText = active.filter(a => !a.termo_responsabilidade).length;
+            document.getElementById('allocTableCount').innerText = `${active.length} Itens`;
+
+            emptyState.classList.toggle('hidden', active.length !== 0);
+            if (active.length === 0) return;
+
+            active.forEach(item => {
+                const asset = assets.find(a => a.id === item.asset_id);
+                const collab = collaboratorObj(item.collaborator_id);
+                const branch = asset ? branches.find(b => b.id === asset.branch_id) : null;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-5">
+                            <div class="font-mono font-bold text-slate-900">${asset ? esc(asset.asset_tag || asset.nome) : '—'}</div>
+                            <div class="text-[10px] text-slate-400 font-mono">${asset ? [asset.brand, asset.model].filter(Boolean).map(esc).join(' ') : ''}</div>
+                        </td>
+                        <td class="py-3 px-5">
+                            <div class="font-bold text-slate-800 text-xs">${collab ? esc(collab.nome) : 'N/A'}</div>
+                            <div class="text-[10px] text-slate-400 uppercase tracking-tight">${collab ? esc(collab.cargo || '') : ''}</div>
+                        </td>
+                        <td class="py-3 px-5 text-xs text-slate-500">
+                            <div>${branch ? esc(branch.nome) : ''}</div>
+                            <div class="text-[10px] text-indigo-500 font-semibold mt-0.5"><i class="fa-solid fa-clock"></i> ${new Date(item.allocated_at).toLocaleString('pt-BR')}</div>
+                        </td>
+                        <td class="py-3 px-5 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="viewTerm('${item.id}')" class="bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 font-bold text-[10px] px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5" title="Ver Termo">
+                                    <i class="fa-solid fa-file-invoice"></i> Ver Termo
+                                </button>
+                                <button onclick="deallocateAsset('${item.id}')" class="bg-slate-50 text-slate-600 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 font-bold text-[10px] px-2 py-1.5 rounded-lg transition-all" title="Devolver ao Estoque">
+                                    <i class="fa-solid fa-arrow-rotate-left"></i> Devolver
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // ---------------- Alocação rápida ----------------
+
+        document.getElementById('quickAllocForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const assetId = document.getElementById('allocFormAssetId').value;
+            const collabId = document.getElementById('allocFormCollabId').value;
+            if (!assetId || !collabId) {
+                showToast('Erro: Selecione o equipamento e o colaborador!', 'error');
+                return;
+            }
+            try {
+                const result = await apiFetch('/allocations', { method: 'POST', body: { asset_id: assetId, collaborator_id: collabId } });
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                showToast('Ativo alocado com sucesso!');
+                document.getElementById('quickAllocForm').reset();
+                selectedAssetForTerm = result.allocation;
+                renderTermPreview(result.allocation);
+                openTermPreviewModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao processar alocação.', 'error');
+            }
+        };
+
+        function deallocateAsset(allocationId) {
+            openDeleteModal('Tem certeza de que deseja devolver este ativo ao estoque?', async () => {
+                try {
+                    await apiFetch(`/allocations/${allocationId}/return`, { method: 'POST' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Ativo devolvido ao estoque.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro ao devolver ativo.', 'error');
+                }
+            });
+        }
+
+        function viewTerm(allocationId) {
+            const alloc = allocations.find(a => a.id === allocationId);
+            if (!alloc) return;
+            renderTermPreview(alloc);
+            openTermPreviewModal();
+        }
+
+        function renderTermPreview(alloc) {
+            const asset = assets.find(a => a.id === alloc.asset_id);
+            const collab = collaboratorObj(alloc.collaborator_id);
+            const branch = asset ? branches.find(b => b.id === asset.branch_id) : null;
+            const company = branch ? companies.find(c => c.id === branch.company_id) : null;
+            const sector = collab ? sectors.find(s => s.id === collab.sector_id) : null;
+            const type = asset ? assetTypeObj(asset.asset_type_id) : null;
+
+            const meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+            const hoje = new Date(alloc.allocated_at);
+            const dataExtensa = `${hoje.getDate()} de ${meses[hoje.getMonth()]} de ${hoje.getFullYear()}`;
+
+            const termHtml = `
+                <div class="space-y-6">
+                    <div class="border-b-2 border-slate-900 pb-6 flex items-center justify-between">
+                        <div>
+                            <h1 class="text-lg font-bold uppercase tracking-wider">${company ? esc(company.nome) : 'InvTech'}</h1>
+                            <p class="text-[10px] text-slate-500 font-semibold">CNPJ: ${company ? esc(company.cnpj) : ''} | Unidade: ${branch ? esc(branch.nome) : ''}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[10px] font-bold text-slate-700">DOCUMENTO DE TI</p>
+                            <p class="text-[9px] text-slate-500 font-mono">Ref: TERMO-${asset ? esc(asset.asset_tag || asset.id.slice(0, 8)) : ''}</p>
+                        </div>
+                    </div>
+                    <div class="text-center my-6">
+                        <h2 class="text-sm font-bold uppercase tracking-widest underline">Termo de Responsabilidade e Recebimento de Equipamento</h2>
+                    </div>
+                    <p class="text-justify leading-relaxed text-slate-900 text-xs">
+                        Pelo presente instrumento, eu, <strong>${collab ? esc(collab.nome) : ''}</strong>${collab && collab.email ? `, portador do e-mail corporativo <strong>${esc(collab.email)}</strong>` : ''}${collab && collab.cargo ? `, admitido na função de <strong>${esc(collab.cargo)}</strong>` : ''}, alocado no setor de <strong>${sector ? esc(sector.nome) : ''}</strong> na unidade <strong>${branch ? esc(branch.nome) : ''}</strong>, declaro para os devidos fins de direito que recebi da empresa <strong>${company ? esc(company.nome) : ''}</strong>, a título de empréstimo para uso exclusivo no desempenho de minhas atividades profissionais, o equipamento de Tecnologia da Informação de propriedade da empresa detalhado na tabela abaixo:
+                    </p>
+                    <div class="border border-slate-300 rounded-lg overflow-hidden">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <tbody>
+                                <tr class="bg-slate-50 border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700 w-1/3">Código Patrimonial:</td>
+                                    <td class="p-3 font-mono font-semibold text-slate-900">${asset ? esc(asset.asset_tag || '-') : ''}</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700">Ativo:</td>
+                                    <td class="p-3 font-mono text-indigo-700">${asset ? esc(asset.nome) : ''}${asset && asset.hostname ? ' (' + esc(asset.hostname) + ')' : ''}</td>
+                                </tr>
+                                <tr class="bg-slate-50 border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700">Tipo de Equipamento:</td>
+                                    <td class="p-3">${type ? esc(type.nome) : 'Computador'}</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700">Marca / Modelo:</td>
+                                    <td class="p-3 font-semibold">${asset ? [asset.brand, asset.model].filter(Boolean).map(esc).join(' - ') || '-' : ''}</td>
+                                </tr>
+                                <tr class="bg-slate-50 border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700">Especificações Técnicas:</td>
+                                    <td class="p-3 font-mono">${asset ? [asset.cpu ? 'CPU: ' + esc(asset.cpu) : '', asset.ram ? 'RAM: ' + esc(asset.ram) : '', asset.storage ? 'Armazenamento: ' + esc(asset.storage) : ''].filter(Boolean).join(' | ') || '-' : ''}</td>
+                                </tr>
+                                <tr class="border-b border-slate-300">
+                                    <td class="p-3 font-bold text-slate-700">Número de Série (S/N):</td>
+                                    <td class="p-3 font-mono font-semibold">${asset ? esc(asset.serial_number || 'N/A') : ''}</td>
+                                </tr>
+                                <tr class="bg-slate-50">
+                                    <td class="p-3 font-bold text-slate-700">Notas de Observação:</td>
+                                    <td class="p-3 italic text-slate-600">${asset && asset.notes ? esc(asset.notes) : 'Equipamento em perfeitas condições físicas e operacionais.'}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="space-y-3 pt-2 text-justify text-[11px] text-slate-800">
+                        <p><strong>Cláusula 1ª - Da Finalidade:</strong> O equipamento de TI acima descrito destina-se única e exclusivamente às atividades e tarefas profissionais vinculadas à empresa, sendo expressamente proibida a sua cessão, aluguel, empréstimo ou utilização por terceiros alheios aos quadros da instituição.</p>
+                        <p><strong>Cláusula 2ª - Da Conservação e Uso:</strong> Comprometo-me a zelar pela integridade física e pelo bom funcionamento do equipamento.</p>
+                        <p><strong>Cláusula 3ª - Softwares e Segurança:</strong> Estou ciente de que é vedado instalar softwares não homologados ou piratas.</p>
+                        <p><strong>Cláusula 4ª - Devolução do Bem:</strong> Em caso de desligamento ou solicitação da diretoria de TI, obrigo-me a restituir o equipamento no prazo máximo de 24 horas úteis.</p>
+                        <p><strong>Cláusula 5ª - Perda ou Danos por Negligência:</strong> Em caso de negligência comprovada, poderei ser responsabilizado pelos custos de manutenção ou reposição do bem.</p>
+                    </div>
+                    <div class="text-right pt-6"><p>${branch && branch.city ? esc(branch.city) : ''}, ${dataExtensa}.</p></div>
+                    <div class="grid grid-cols-2 gap-12 pt-12 text-center text-xs">
+                        <div class="space-y-1">
+                            <p class="border-t border-slate-400 pt-2 font-semibold">${collab ? esc(collab.nome) : ''}</p>
+                            <p class="text-[10px] text-slate-500">${collab ? esc(collab.cargo || '') : ''} (Colaborador)</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="border-t border-slate-400 pt-2 font-semibold">${company ? esc(company.nome) : 'InvTech'} TI & Infraestrutura</p>
+                            <p class="text-[10px] text-slate-500">Gestão de Ativos Corporativos</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('termPaperContent').innerHTML = termHtml;
+            document.getElementById('printSection').innerHTML = termHtml;
+        }
+
+        function openTermPreviewModal() {
+            const modal = document.getElementById('termPreviewModal');
+            const content = document.getElementById('termPreviewModalContent');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeTermPreviewModal() {
+            const modal = document.getElementById('termPreviewModal');
+            const content = document.getElementById('termPreviewModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+            selectedAssetForTerm = null;
+        }
+        function printCurrentTerm() { window.print(); }
+
+        // ---------------- Modais: Ativo ----------------
+
+        function openAssetModal(id = null) {
+            const modal = document.getElementById('assetModal');
+            const content = document.getElementById('assetModalContent');
+            document.getElementById('assetForm').reset();
+            document.getElementById('formAssetEditId').value = '';
+
+            if (id) {
+                document.getElementById('assetModalTitle').innerText = 'Editar Ativo de TI';
+                const a = assets.find(item => item.id === id);
+                if (a) {
+                    document.getElementById('formAssetEditId').value = a.id;
+                    document.getElementById('formAssetId').value = a.asset_tag || '';
+                    document.getElementById('formAssetHostname').value = a.hostname || '';
+                    document.getElementById('formAssetNome').value = a.nome;
+                    document.getElementById('formAssetType').value = a.asset_type_id;
+                    document.getElementById('formAssetBranchId').value = a.branch_id;
+                    populateSectorSelect('formAssetBranchId', 'formAssetSectorId');
+                    document.getElementById('formAssetSectorId').value = a.sector_id;
+                    document.getElementById('formAssetBrand').value = a.brand || '';
+                    document.getElementById('formAssetModel').value = a.model || '';
+                    document.getElementById('formAssetCpu').value = a.cpu || '';
+                    document.getElementById('formAssetRam').value = a.ram || '';
+                    document.getElementById('formAssetStorage').value = a.storage || '';
+                    document.getElementById('formAssetSerial').value = a.serial_number || '';
+                    const statusSelect = document.getElementById('formAssetStatus');
+                    statusSelect.value = a.status;
+                    statusSelect.disabled = a.status === 'allocated';
+                }
+            } else {
+                document.getElementById('assetModalTitle').innerText = 'Cadastrar Novo Ativo';
+                document.getElementById('formAssetStatus').disabled = false;
+                document.getElementById('formAssetStatus').value = 'available';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeAssetModal() {
+            const modal = document.getElementById('assetModal');
+            const content = document.getElementById('assetModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+
+        document.getElementById('assetForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formAssetEditId').value;
+            const orNull = v => v && v.trim() !== '' ? v.trim() : null;
+            const body = {
+                nome: document.getElementById('formAssetNome').value.trim(),
+                asset_type_id: document.getElementById('formAssetType').value,
+                branch_id: document.getElementById('formAssetBranchId').value,
+                sector_id: document.getElementById('formAssetSectorId').value,
+                asset_tag: orNull(document.getElementById('formAssetId').value),
+                hostname: orNull(document.getElementById('formAssetHostname').value),
+                brand: orNull(document.getElementById('formAssetBrand').value),
+                model: orNull(document.getElementById('formAssetModel').value),
+                cpu: orNull(document.getElementById('formAssetCpu').value),
+                ram: orNull(document.getElementById('formAssetRam').value),
+                storage: orNull(document.getElementById('formAssetStorage').value),
+                serial_number: orNull(document.getElementById('formAssetSerial').value),
+            };
+            const statusSelect = document.getElementById('formAssetStatus');
+            if (!statusSelect.disabled) body.status = statusSelect.value;
+
+            try {
+                if (editId) {
+                    await apiFetch(`/assets/${editId}`, { method: 'PUT', body });
+                    showToast('Ativo atualizado com sucesso.');
+                } else {
+                    await apiFetch('/assets', { method: 'POST', body });
+                    showToast('Ativo criado com sucesso.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeAssetModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar ativo.', 'error');
+            }
+        };
+
+        function editAsset(id) { openAssetModal(id); }
+        function askDeleteAsset(id) {
+            openDeleteModal('Deseja remover este ativo?', async () => {
+                try {
+                    await apiFetch(`/assets/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Ativo excluído.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro ao excluir ativo.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Tipo de Ativo ----------------
+
+        function openTypeModal(id = null) {
+            const modal = document.getElementById('typeModal');
+            const content = document.getElementById('typeModalContent');
+            document.getElementById('typeForm').reset();
+            document.getElementById('formTypeEditId').value = '';
+            if (id) {
+                document.getElementById('typeModalTitle').innerText = 'Editar Categoria de Ativo';
+                const t = assetTypes.find(item => item.id === id);
+                if (t) {
+                    document.getElementById('formTypeEditId').value = t.id;
+                    document.getElementById('formTypeName').value = t.nome;
+                    document.getElementById('formTypeIcon').value = t.icon || 'fa-circle-question';
+                    document.getElementById('formTypeDesc').value = t.description || '';
+                }
+            } else {
+                document.getElementById('typeModalTitle').innerText = 'Cadastrar Nova Categoria de Hardware';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeTypeModal() {
+            const modal = document.getElementById('typeModal');
+            const content = document.getElementById('typeModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('typeForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formTypeEditId').value;
+            const body = {
+                nome: document.getElementById('formTypeName').value.trim(),
+                icon: document.getElementById('formTypeIcon').value,
+                description: document.getElementById('formTypeDesc').value.trim() || null,
+            };
+            try {
+                if (editId) {
+                    await apiFetch(`/asset-types/${editId}`, { method: 'PUT', body });
+                    showToast('Categoria atualizada.');
+                } else {
+                    await apiFetch('/asset-types', { method: 'POST', body });
+                    showToast('Categoria criada.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeTypeModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar categoria.', 'error');
+            }
+        };
+        function editAssetType(id) { openTypeModal(id); }
+        function askDeleteAssetType(id) {
+            openDeleteModal('Deseja remover este tipo de ativo?', async () => {
+                try {
+                    await apiFetch(`/asset-types/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Categoria removida.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro: categoria em uso por algum ativo.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Colaborador ----------------
+
+        function openCollaboratorModal(id = null) {
+            const modal = document.getElementById('collabModal');
+            const content = document.getElementById('collabModalContent');
+            document.getElementById('collabForm').reset();
+            document.getElementById('formCollabEditId').value = '';
+            if (id) {
+                document.getElementById('collabModalTitle').innerText = 'Editar Colaborador';
+                const c = collaborators.find(item => item.id === id);
+                if (c) {
+                    document.getElementById('formCollabEditId').value = c.id;
+                    document.getElementById('formCollabName').value = c.nome;
+                    document.getElementById('formCollabEmail').value = c.email || '';
+                    document.getElementById('formCollabRole').value = c.cargo || '';
+                    document.getElementById('formCollabBranch').value = c.branch_id;
+                    populateSectorSelect('formCollabBranch', 'formCollabSector');
+                    document.getElementById('formCollabSector').value = c.sector_id;
+                    document.getElementById('formCollabStatus').value = c.status;
+                }
+            } else {
+                document.getElementById('collabModalTitle').innerText = 'Cadastrar Novo Colaborador';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeCollabModal() {
+            const modal = document.getElementById('collabModal');
+            const content = document.getElementById('collabModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('collabForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formCollabEditId').value;
+            const body = {
+                nome: document.getElementById('formCollabName').value.trim(),
+                email: document.getElementById('formCollabEmail').value.trim() || null,
+                cargo: document.getElementById('formCollabRole').value.trim() || null,
+                branch_id: document.getElementById('formCollabBranch').value,
+                sector_id: document.getElementById('formCollabSector').value,
+                status: document.getElementById('formCollabStatus').value,
+            };
+            try {
+                if (editId) {
+                    await apiFetch(`/collaborators/${editId}`, { method: 'PUT', body });
+                    showToast('Colaborador atualizado.');
+                } else {
+                    await apiFetch('/collaborators', { method: 'POST', body });
+                    showToast('Colaborador registrado.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeCollabModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar colaborador.', 'error');
+            }
+        };
+        function editCollaborator(id) { openCollaboratorModal(id); }
+        function askDeleteCollaborator(id) {
+            openDeleteModal('Deseja excluir este colaborador?', async () => {
+                try {
+                    await apiFetch(`/collaborators/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Colaborador removido.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro ao remover colaborador.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Setor ----------------
+
+        function openSectorModal(id = null) {
+            const modal = document.getElementById('sectorModal');
+            const content = document.getElementById('sectorModalContent');
+            document.getElementById('sectorForm').reset();
+            document.getElementById('formSectorEditId').value = '';
+            document.getElementById('sectorForm').dataset.branchId = branches[0] ? branches[0].id : '';
+            if (id) {
+                document.getElementById('sectorModalTitle').innerText = 'Editar Setor';
+                const s = sectors.find(item => item.id === id);
+                if (s) {
+                    document.getElementById('formSectorEditId').value = s.id;
+                    document.getElementById('formSectorName').value = s.nome;
+                    document.getElementById('formSectorDesc').value = s.description || '';
+                    document.getElementById('sectorForm').dataset.branchId = s.branch_id;
+                }
+            } else {
+                document.getElementById('sectorModalTitle').innerText = 'Cadastrar Novo Setor';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeSectorModal() {
+            const modal = document.getElementById('sectorModal');
+            const content = document.getElementById('sectorModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('sectorForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formSectorEditId').value;
+            const branchId = document.getElementById('sectorForm').dataset.branchId;
+            const body = {
+                nome: document.getElementById('formSectorName').value.trim(),
+                description: document.getElementById('formSectorDesc').value.trim() || null,
+            };
+            try {
+                if (editId) {
+                    await apiFetch(`/sectors/${editId}`, { method: 'PUT', body });
+                    showToast('Setor atualizado.');
+                } else {
+                    if (!branchId) { showToast('Cadastre uma filial antes de criar setores.', 'error'); return; }
+                    await apiFetch(`/branches/${branchId}/sectors`, { method: 'POST', body });
+                    showToast('Setor criado.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeSectorModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar setor.', 'error');
+            }
+        };
+        function editSector(id) { openSectorModal(id); }
+        function askDeleteSector(id) {
+            openDeleteModal('Deseja remover este setor?', async () => {
+                try {
+                    await apiFetch(`/sectors/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Setor removido.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro: setor em uso.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Empresa ----------------
+
+        function openCompanyModal(id = null) {
+            const modal = document.getElementById('companyModal');
+            const content = document.getElementById('companyModalContent');
+            document.getElementById('companyForm').reset();
+            document.getElementById('formCompanyEditId').value = '';
+            if (id) {
+                document.getElementById('companyModalTitle').innerText = 'Editar Empresa';
+                const c = companies.find(item => item.id === id);
+                if (c) {
+                    document.getElementById('formCompanyEditId').value = c.id;
+                    document.getElementById('formCompanyName').value = c.nome;
+                    document.getElementById('formCompanyCnpj').value = c.cnpj;
+                    document.getElementById('formCompanyCity').value = c.city || '';
+                    document.getElementById('formCompanyState').value = c.state || '';
+                }
+            } else {
+                document.getElementById('companyModalTitle').innerText = 'Cadastrar Nova Empresa';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeCompanyModal() {
+            const modal = document.getElementById('companyModal');
+            const content = document.getElementById('companyModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('companyForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formCompanyEditId').value;
+            const body = {
+                nome: document.getElementById('formCompanyName').value.trim(),
+                cnpj: document.getElementById('formCompanyCnpj').value.replace(/\D/g, ''),
+                city: document.getElementById('formCompanyCity').value.trim() || null,
+                state: document.getElementById('formCompanyState').value.trim().toUpperCase() || null,
+            };
+            try {
+                if (editId) {
+                    await apiFetch(`/companies/${editId}`, { method: 'PUT', body });
+                    showToast('Empresa atualizada com sucesso.');
+                } else {
+                    await apiFetch('/companies', { method: 'POST', body });
+                    showToast('Empresa cadastrada com sucesso.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeCompanyModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar empresa.', 'error');
+            }
+        };
+        function editCompany(id) { openCompanyModal(id); }
+        function askDeleteCompany(id) {
+            openDeleteModal('Deseja remover esta empresa?', async () => {
+                try {
+                    await apiFetch(`/companies/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Empresa removida.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro: empresa possui filiais vinculadas.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Filial ----------------
+
+        function openBranchModal(id = null) {
+            const modal = document.getElementById('branchModal');
+            const content = document.getElementById('branchModalContent');
+            document.getElementById('branchForm').reset();
+            document.getElementById('formBranchEditId').value = '';
+            if (id) {
+                document.getElementById('branchModalTitle').innerText = 'Editar Filial';
+                const b = branches.find(item => item.id === id);
+                if (b) {
+                    document.getElementById('formBranchEditId').value = b.id;
+                    document.getElementById('formBranchCompanyId').value = b.company_id;
+                    document.getElementById('formBranchName').value = b.nome;
+                    document.getElementById('formBranchCnpj').value = b.cnpj;
+                    document.getElementById('formBranchCity').value = b.city || '';
+                    document.getElementById('formBranchState').value = b.state || '';
+                }
+            } else {
+                document.getElementById('branchModalTitle').innerText = 'Cadastrar Nova Filial';
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeBranchModal() {
+            const modal = document.getElementById('branchModal');
+            const content = document.getElementById('branchModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('branchForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formBranchEditId').value;
+            const companyId = document.getElementById('formBranchCompanyId').value;
+            const body = {
+                nome: document.getElementById('formBranchName').value.trim(),
+                cnpj: document.getElementById('formBranchCnpj').value.replace(/\D/g, ''),
+                city: document.getElementById('formBranchCity').value.trim() || null,
+                state: document.getElementById('formBranchState').value.trim().toUpperCase() || null,
+            };
+            try {
+                if (editId) {
+                    await apiFetch(`/branches/${editId}`, { method: 'PUT', body });
+                    showToast('Filial atualizada.');
+                } else {
+                    await apiFetch(`/companies/${companyId}/branches`, { method: 'POST', body });
+                    showToast('Filial registrada com sucesso.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeBranchModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar filial.', 'error');
+            }
+        };
+        function editBranch(id) { openBranchModal(id); }
+        function askDeleteBranch(id) {
+            openDeleteModal('Deseja remover esta filial?', async () => {
+                try {
+                    await apiFetch(`/branches/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    syncDropdowns();
+                    renderAll();
+                    showToast('Filial removida.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro: filial possui vínculos.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Modais: Role ----------------
+
+        function openRoleModal() {
+            const modal = document.getElementById('roleModal');
+            const content = document.getElementById('roleModalContent');
+            document.getElementById('roleForm').reset();
+            const container = document.getElementById('roleModulesContainer');
+            container.innerHTML = MODULES.map(m => `
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                    <input type="checkbox" value="${m.key}" name="roleModule" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"> ${m.label}
+                </label>
+            `).join('');
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeRoleModal() {
+            const modal = document.getElementById('roleModal');
+            const content = document.getElementById('roleModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('roleForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const name = document.getElementById('formRoleName').value.trim();
+            const checked = Array.from(document.querySelectorAll('input[name="roleModule"]:checked')).map(cb => cb.value);
+            if (checked.length === 0) {
+                showToast('Selecione pelo menos um módulo.', 'error');
+                return;
+            }
+            const permissions = [];
+            checked.forEach(mod => ACTIONS.forEach(action => permissions.push({ module: mod, action })));
+            try {
+                await apiFetch('/roles', { method: 'POST', body: { name, permissions } });
+                roles = await apiFetch('/roles');
+                syncDropdowns();
+                showToast('Role criada com sucesso.');
+                closeRoleModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao criar role.', 'error');
+            }
+        };
+
+        // ---------------- Modais: Usuário ----------------
+
+        function openUserModal(id = null) {
+            const modal = document.getElementById('userModal');
+            const content = document.getElementById('userModalContent');
+            document.getElementById('userForm').reset();
+            document.getElementById('formUserEditId').value = '';
+            document.querySelector('input[name="formUserScopeType"][value="all"]').checked = true;
+            onUserScopeTypeChange();
+
+            if (id) {
+                document.getElementById('userModalTitle').innerText = 'Editar Usuário';
+                const u = users.find(item => item.id === id);
+                if (u) {
+                    document.getElementById('formUserEditId').value = u.id;
+                    document.getElementById('formUserLogin').value = u.email;
+                    document.getElementById('formUserLogin').disabled = true;
+                    document.getElementById('formUserPasswordWrapper').classList.add('hidden');
+                    document.getElementById('formUserPassword').required = false;
+                    document.getElementById('formUserRoleId').value = u.role_id;
+                    document.getElementById('formUserStatus').value = u.status;
+                }
+            } else {
+                document.getElementById('userModalTitle').innerText = 'Cadastrar Novo Usuário';
+                document.getElementById('formUserLogin').disabled = false;
+                document.getElementById('formUserPasswordWrapper').classList.remove('hidden');
+                document.getElementById('formUserPassword').required = true;
+            }
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            const content = document.getElementById('userModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 250);
+        }
+        document.getElementById('userForm').onsubmit = async function (e) {
+            e.preventDefault();
+            const editId = document.getElementById('formUserEditId').value;
+            const roleId = document.getElementById('formUserRoleId').value;
+            const status = document.getElementById('formUserStatus').value;
+
+            try {
+                if (editId) {
+                    await apiFetch(`/users/${editId}`, { method: 'PUT', body: { role_id: roleId, status } });
+                    showToast('Usuário atualizado com sucesso.');
+                } else {
+                    const email = document.getElementById('formUserLogin').value.trim();
+                    const senha = document.getElementById('formUserPassword').value;
+                    const scopeType = document.querySelector('input[name="formUserScopeType"]:checked').value;
+                    const scopeTarget = document.getElementById('formUserScopeTarget').value;
+                    const scopes = [{ scope_type: scopeType, scope_id: scopeType === 'all' ? null : scopeTarget }];
+                    await apiFetch('/users', { method: 'POST', body: { email, role_id: roleId, senha_temporaria: senha, scopes } });
+                    showToast('Usuário registrado com sucesso.');
+                }
+                await loadAllData();
+                syncDropdowns();
+                renderAll();
+                closeUserModal();
+            } catch (err) {
+                showToast(err.message || 'Erro ao salvar usuário.', 'error');
+            }
+        };
+        function editUser(id) { openUserModal(id); }
+        function askDeleteUser(id) {
+            openDeleteModal('Deseja excluir este usuário?', async () => {
+                try {
+                    await apiFetch(`/users/${id}`, { method: 'DELETE' });
+                    await loadAllData();
+                    renderAll();
+                    showToast('Usuário removido.', 'info');
+                } catch (err) {
+                    showToast(err.message || 'Erro ao remover usuário.', 'error');
+                }
+            });
+        }
+
+        // ---------------- Utilitários compartilhados ----------------
+
+        function openDeleteModal(msg, confirmCallback) {
+            const modal = document.getElementById('deleteModal');
+            const content = document.getElementById('deleteModalContent');
+            document.getElementById('deleteModalMsg').innerText = msg;
+            deleteCallback = confirmCallback;
+            modal.classList.remove('hidden');
+            setTimeout(() => content.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            const content = document.getElementById('deleteModalContent');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+            deleteCallback = null;
+        }
+        document.getElementById('deleteModalConfirmBtn').onclick = function () {
+            if (deleteCallback) deleteCallback();
+            closeDeleteModal();
+        };
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            let colorClasses = 'bg-white text-slate-800 border-l-4 border-emerald-500';
+            let icon = '<i class="fa-solid fa-circle-check text-emerald-500"></i>';
+            if (type === 'error') {
+                colorClasses = 'bg-white text-slate-800 border-l-4 border-rose-500';
+                icon = '<i class="fa-solid fa-circle-xmark text-rose-500"></i>';
+            } else if (type === 'info') {
+                colorClasses = 'bg-slate-900 text-white border-l-4 border-indigo-400';
+                icon = '<i class="fa-solid fa-circle-info text-indigo-400"></i>';
+            }
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-lg shadow-xl border border-slate-200/50 min-w-[300px] transition-all duration-300 ${colorClasses}`;
+            toast.innerHTML = `
+                <div class="text-sm">${icon}</div>
+                <div class="text-xs font-semibold flex-grow">${esc(message)}</div>
+                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-xs"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.add('opacity-0');
+                    setTimeout(() => toast.remove(), 400);
+                }
+            }, 4000);
+        }
+
+        function setupEventListeners() {
+            document.getElementById('assetSearchInput').addEventListener('input', renderAssets);
+            document.getElementById('assetTypeFilter').addEventListener('change', renderAssets);
+            document.getElementById('typeSearchInput').addEventListener('input', renderAssetTypes);
+            document.getElementById('collabSearchInput').addEventListener('input', renderCollaborators);
+            document.getElementById('sectorSearchInput').addEventListener('input', renderSectors);
+            document.getElementById('companySearchInput').addEventListener('input', renderCompanies);
+            document.getElementById('branchSearchInput').addEventListener('input', renderBranches);
+            document.getElementById('userSearchInput').addEventListener('input', renderUsers);
+        }
+    </script>
+</body>
+</html>
