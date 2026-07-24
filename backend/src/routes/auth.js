@@ -2,10 +2,11 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const prisma = require("../lib/prisma");
+const { authRequired, adminOnly } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.post("/register", async (req, res) => {
+router.post("/register", authRequired, adminOnly, async (req, res) => {
   const { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {

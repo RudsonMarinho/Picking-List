@@ -51,14 +51,23 @@ router.post("/generate/:orderId", async (req, res) => {
       }
 
       const itemsToCreate = [];
+      const availableStockByProduct = new Map();
 
       for (const orderItem of order.items) {
         let remaining = orderItem.quantity;
 
-        const stocks = await tx.stock.findMany({
-          where: { productId: orderItem.productId, quantity: { gt: 0 } },
-          orderBy: { quantity: "desc" },
-        });
+        if (!availableStockByProduct.has(orderItem.productId)) {
+          const stocks = await tx.stock.findMany({
+            where: { productId: orderItem.productId, quantity: { gt: 0 } },
+            orderBy: { quantity: "desc" },
+          });
+          availableStockByProduct.set(
+            orderItem.productId,
+            stocks.map((s) => ({ locationId: s.locationId, quantity: s.quantity }))
+          );
+        }
+
+        const stocks = availableStockByProduct.get(orderItem.productId);
 
         for (const stock of stocks) {
           if (remaining <= 0) break;
@@ -71,6 +80,7 @@ router.post("/generate/:orderId", async (req, res) => {
             quantityRequested: take,
           });
           remaining -= take;
+          stock.quantity -= take;
         }
 
         if (remaining > 0) {
