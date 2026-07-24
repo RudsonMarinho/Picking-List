@@ -26,13 +26,38 @@ frontend/   Aplicação web (React + Vite)
 
 ## Como rodar localmente
 
-### 1. Banco de dados
+### Opção 1 — Docker (recomendado)
+
+Só precisa ter o [Docker](https://docs.docker.com/get-docker/) instalado — não é necessário instalar Node.js nem PostgreSQL na sua máquina.
 
 ```bash
-docker compose up -d
+docker compose up --build
 ```
 
-### 2. Backend
+Isso sobe três serviços:
+
+- **postgres** — banco de dados (porta `5432`)
+- **backend** — API Express, criando/atualizando as tabelas e o usuário de exemplo automaticamente a cada start (porta `3333`)
+- **frontend** — aplicação React com hot-reload (porta `5173`)
+
+Depois de subir, acesse **http://localhost:5173** e faça login com:
+
+- E-mail: `admin@pickinglist.com`
+- Senha: `admin123`
+
+Alterações nos arquivos de `backend/` e `frontend/` são refletidas automaticamente (volumes montados + nodemon/Vite). Para parar tudo: `Ctrl+C` ou `docker compose down` (use `docker compose down -v` se quiser apagar também os dados do banco).
+
+### Opção 2 — Node.js local
+
+Use esta opção se preferir rodar backend e frontend diretamente na sua máquina (requer Node.js 20+ instalado). O banco ainda roda em Docker.
+
+#### 1. Banco de dados
+
+```bash
+docker compose up -d postgres
+```
+
+#### 2. Backend
 
 ```bash
 cd backend
@@ -45,7 +70,7 @@ npm run dev
 
 A API sobe em `http://localhost:3333`. Usuário de exemplo criado pelo seed: `admin@pickinglist.com` / `admin123`.
 
-### 3. Frontend
+#### 3. Frontend
 
 ```bash
 cd frontend
