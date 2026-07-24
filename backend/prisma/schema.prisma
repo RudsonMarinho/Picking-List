@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  OPERATOR
+}
+
+enum OrderStatus {
+  PENDING
+  IN_PICKING
+  COMPLETED
+}
+
+enum PickingListStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum PickingItemStatus {
+  PENDING
+  PICKED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(OPERATOR)
+  createdAt    DateTime @default(now())
+}
+
+model Product {
+  id        String   @id @default(uuid())
+  sku       String   @unique
+  name      String
+  unit      String   @default("UN")
+  createdAt DateTime @default(now())
+
+  stocks       Stock[]
+  orderItems   OrderItem[]
+  pickingItems PickingItem[]
+}
+
+model Location {
+  id          String  @id @default(uuid())
+  code        String  @unique
+  description String?
+
+  stocks       Stock[]
+  pickingItems PickingItem[]
+}
+
+model Stock {
+  id         String   @id @default(uuid())
+  productId  String
+  locationId String
+  quantity   Int      @default(0)
+  updatedAt  DateTime @updatedAt
+
+  product  Product  @relation(fields: [productId], references: [id])
+  location Location @relation(fields: [locationId], references: [id])
+
+  @@unique([productId, locationId])
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+
+  items       OrderItem[]
+  pickingList PickingList?
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model PickingList {
+  id          String            @id @default(uuid())
+  orderId     String            @unique
+  status      PickingListStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+  completedAt DateTime?
+
+  order Order         @relation(fields: [orderId], references: [id])
+  items PickingItem[]
+}
+
+model PickingItem {
+  id                String             @id @default(uuid())
+  pickingListId     String
+  productId         String
+  locationId        String
+  quantityRequested Int
+  quantityPicked    Int                @default(0)
+  status            PickingItemStatus  @default(PENDING)
+
+  pickingList PickingList @relation(fields: [pickingListId], references: [id])
+  product     Product     @relation(fields: [productId], references: [id])
+  location    Location    @relation(fields: [locationId], references: [id])
+}

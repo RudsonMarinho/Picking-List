@@ -1,0 +1,173 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f4f6f8;
+  color: #1f2933;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  margin-top: 1rem;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid #e4e7eb;
+}
+
+th {
+  background: #eef1f4;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+input, select {
+  padding: 0.5rem;
+  border: 1px solid #cbd2d9;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.error {
+  color: #d64545;
+  font-weight: 600;
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.8rem 1.5rem;
+  background: #111827;
+  color: #fff;
+}
+
+.topbar .brand {
+  font-weight: 700;
+}
+
+.topbar nav {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+}
+
+.topbar nav a {
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.topbar nav a.active {
+  color: #fff;
+  font-weight: 600;
+}
+
+.user-info {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.content {
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.cards {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.card {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.card-label {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 320px;
+}
+
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.subtitle {
+  margin-top: -0.6rem;
+  color: #6b7280;
+}
